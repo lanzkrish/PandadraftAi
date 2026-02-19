@@ -20,7 +20,7 @@ function getAuthUrl() {
     response_type: 'code',
     client_id: config.linkedin.clientId,
     redirect_uri: config.linkedin.redirectUri,
-    scope: 'openid profile w_member_social',
+    scope: 'openid profile w_member_social w_organization_social r_organization_social',
     state: 'autodraft_' + Date.now(),
   });
   return `${LINKEDIN_AUTH_URL}?${params.toString()}`;
@@ -213,8 +213,23 @@ async function getProfile() {
  */
 async function createPost(text) {
   const accessToken = await getAccessToken();
-  const profile = await getProfile();
-  const authorUrn = `urn:li:person:${profile.sub}`;
+
+  // Determine author: organization page or personal profile
+  let authorUrn;
+  let postTarget;
+
+  if (config.linkedin.orgId) {
+    // Post as company/organization page
+    authorUrn = `urn:li:organization:${config.linkedin.orgId}`;
+    postTarget = `Organization Page (ID: ${config.linkedin.orgId})`;
+  } else {
+    // Post as personal profile
+    const profile = await getProfile();
+    authorUrn = `urn:li:person:${profile.sub}`;
+    postTarget = `Personal Profile (${profile.name})`;
+  }
+
+  logger.info(`Posting to LinkedIn as: ${postTarget}`);
 
   const postBody = {
     author: authorUrn,
@@ -241,10 +256,11 @@ async function createPost(text) {
       },
     });
 
-    logger.info(`LinkedIn post created successfully! ID: ${response.headers['x-restli-id']}`);
+    logger.info(`LinkedIn post created on ${postTarget}! ID: ${response.headers['x-restli-id']}`);
     return {
       success: true,
       postId: response.headers['x-restli-id'],
+      target: postTarget,
     };
   } catch (error) {
     logger.error('Failed to create LinkedIn post:', error.response?.data || error.message);

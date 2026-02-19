@@ -26,6 +26,9 @@ const config = {
     clientId: process.env.LINKEDIN_CLIENT_ID,
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
     redirectUri: process.env.LINKEDIN_REDIRECT_URI || `${process.env.APP_URL || 'http://localhost:3000'}/auth/linkedin/callback`,
+    // Organization/Page ID for posting to a company page (leave empty for personal profile)
+    // Find your org ID: go to your LinkedIn page → Admin view → the number in the URL
+    orgId: process.env.LINKEDIN_ORG_ID || '',
     // Allow restoring tokens from env var (for ephemeral filesystems like Render)
     savedTokens: process.env.LINKEDIN_TOKENS || null,
   },
