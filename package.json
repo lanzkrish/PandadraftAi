@@ -1,0 +1,22 @@
+{
+  "name": "autodraft-ai",
+  "version": "1.0.0",
+  "description": "AI-powered LinkedIn auto-poster with Telegram bot interface",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": ["linkedin", "telegram", "ai", "automation"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-cron": "^3.0.3",
+    "node-telegram-bot-api": "^0.66.0",
+    "winston": "^3.17.0"
+  }
+}
