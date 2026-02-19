@@ -1,10 +1,19 @@
 require('dotenv').config();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const config = {
+  // Environment
+  env: process.env.NODE_ENV || 'development',
+  isProduction,
+  appUrl: process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`,
+
   // Telegram
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
     chatId: process.env.TELEGRAM_CHAT_ID,
+    // Use webhook in production (Render), polling in development
+    useWebhook: isProduction,
   },
 
   // Google Gemini AI
@@ -16,7 +25,9 @@ const config = {
   linkedin: {
     clientId: process.env.LINKEDIN_CLIENT_ID,
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-    redirectUri: process.env.LINKEDIN_REDIRECT_URI || 'http://localhost:3000/auth/linkedin/callback',
+    redirectUri: process.env.LINKEDIN_REDIRECT_URI || `${process.env.APP_URL || 'http://localhost:3000'}/auth/linkedin/callback`,
+    // Allow restoring tokens from env var (for ephemeral filesystems like Render)
+    savedTokens: process.env.LINKEDIN_TOKENS || null,
   },
 
   // Scheduler

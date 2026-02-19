@@ -5,9 +5,34 @@ const linkedin = require('../services/linkedin');
 
 /**
  * Initialize and configure the Telegram bot
+ * - Development: uses polling (long-poll Telegram servers)
+ * - Production (Render): uses webhook (Telegram pushes updates to us)
  */
-function createTelegramBot(workflow) {
-  const bot = new TelegramBot(config.telegram.botToken, { polling: true });
+function createTelegramBot(workflow, app) {
+  let bot;
+
+  if (config.telegram.useWebhook) {
+    // Production: webhook mode (Render / cloud)
+    bot = new TelegramBot(config.telegram.botToken, { webHook: false });
+    const webhookUrl = `${config.appUrl}/bot${config.telegram.botToken}`;
+
+    // Set up webhook endpoint on Express
+    app.post(`/bot${config.telegram.botToken}`, (req, res) => {
+      bot.processUpdate(req.body);
+      res.sendStatus(200);
+    });
+
+    // Register webhook with Telegram
+    bot.setWebHook(webhookUrl).then(() => {
+      logger.info(`Telegram webhook set: ${config.appUrl}/bot<TOKEN>`);
+    }).catch((err) => {
+      logger.error('Failed to set Telegram webhook:', err.message);
+    });
+  } else {
+    // Development: polling mode
+    bot = new TelegramBot(config.telegram.botToken, { polling: true });
+  }
+
   const chatId = config.telegram.chatId;
 
   // Helper: check if message is from the authorized user
@@ -123,7 +148,7 @@ function createTelegramBot(workflow) {
       sendMessage('✅ LinkedIn is connected and authorized.');
     } else {
       sendMessage(
-        `❌ LinkedIn is not connected.\n\nVisit this link to authorize:\nhttp://localhost:${config.server.port}/auth/linkedin`
+        `❌ LinkedIn is not connected.\n\nVisit this link to authorize:\n${config.appUrl}/auth/linkedin`
       );
     }
   });
@@ -178,18 +203,19 @@ function createTelegramBot(workflow) {
     if (msg.text) {
       const handled = await workflow.handleFeedback(msg.text);
       if (!handled) {
-        // Not in feedback state — ignore or send help
-        // Don't spam the user with "I don't understand" messages
+        // Not in feedback state — ignore
       }
     }
   });
 
   // Error handling
   bot.on('polling_error', (error) => {
-    logger.error('Telegram polling error:', error);
+    if (!config.telegram.useWebhook) {
+      logger.error('Telegram polling error:', error);
+    }
   });
 
-  logger.info('Telegram bot started successfully');
+  logger.info(`Telegram bot started (${config.telegram.useWebhook ? 'webhook' : 'polling'} mode)`);
   return bot;
 }
 

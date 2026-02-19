@@ -4,71 +4,98 @@ AI-powered LinkedIn auto-poster with a Telegram bot interface.
 
 **How it works:** Every day, the bot generates topic suggestions via AI → you pick one on Telegram → AI drafts the post → you approve or edit → it posts to LinkedIn. Fully automated, fully in your control.
 
-## Quick Start
+---
 
-### 1. Install Dependencies
+## Quick Start (Local Development)
+
 ```bash
-cd /Users/dhananjaysahoo/Startup/AutodraftAi
 npm install
-```
-
-### 2. Set Up Credentials
-
-Copy `.env.example` to `.env` and fill in your values:
-
-```bash
-cp .env.example .env
-```
-
-You'll need:
-
-| Credential | How to Get |
-|---|---|
-| **Telegram Bot Token** | Message [@BotFather](https://t.me/BotFather) → `/newbot` → copy token |
-| **Telegram Chat ID** | Message [@userinfobot](https://t.me/userinfobot) → it replies with your chat ID |
-| **Gemini API Key** | [Google AI Studio](https://aistudio.google.com/apikey) → Create API key |
-| **LinkedIn Client ID/Secret** | [LinkedIn Developer Portal](https://www.linkedin.com/developers/) → Create App → Auth tab |
-
-> **LinkedIn App Setup:** When creating your LinkedIn app, add `http://localhost:3000/auth/linkedin/callback` as an Authorized Redirect URL. Request the `Sign In with LinkedIn using OpenID Connect` and `Share on LinkedIn` products.
-
-### 3. Start the App
-```bash
+cp .env.example .env   # Fill in your credentials
 npm start
 ```
 
-### 4. Authorize LinkedIn
-Open in your browser:
-```
-http://localhost:3000/auth/linkedin
+Visit `http://localhost:3000/auth/linkedin` to authorize LinkedIn.
+Open Telegram → send `/generate` to create your first post.
+
+---
+
+## Deploy to Render 🚀
+
+### 1. Push to GitHub
+```bash
+git init && git add . && git commit -m "Initial commit"
+git remote add origin <your-github-repo-url>
+git push -u origin main
 ```
 
-### 5. Use It!
-Open Telegram → find your bot → send `/generate` to create your first post.
+### 2. Create a Render Web Service
+1. Go to [render.com](https://render.com) → **New** → **Web Service**
+2. Connect your GitHub repo
+3. Settings:
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+   - **Health Check Path:** `/health`
+
+### 3. Set Environment Variables on Render
+In the Render dashboard → **Environment** tab, add:
+
+| Variable | Value |
+|---|---|
+| `NODE_ENV` | `production` |
+| `APP_URL` | `https://your-app-name.onrender.com` |
+| `TELEGRAM_BOT_TOKEN` | Your bot token |
+| `TELEGRAM_CHAT_ID` | Your chat ID |
+| `GEMINI_API_KEY` | Your Gemini key |
+| `LINKEDIN_CLIENT_ID` | Your LinkedIn app client ID |
+| `LINKEDIN_CLIENT_SECRET` | Your LinkedIn app client secret |
+| `LINKEDIN_REDIRECT_URI` | `https://your-app-name.onrender.com/auth/linkedin/callback` |
+
+> ⚠️ **Update LinkedIn Developer Portal too** — add `https://your-app-name.onrender.com/auth/linkedin/callback` as an Authorized Redirect URL.
+
+### 4. Authorize LinkedIn
+Visit `https://your-app-name.onrender.com/auth/linkedin` → log in → approve.
+
+Then check the Render **Logs** tab — copy the `LINKEDIN_TOKENS` JSON and paste it as a new env var `LINKEDIN_TOKENS` on Render so tokens persist across deploys.
+
+### 5. Done! 🎉
+Open Telegram → `/generate` to test.
+
+---
+
+## Architecture
+
+```
+                  ┌─ Polling (dev)
+Telegram Bot ─────┤
+                  └─ Webhook (production)
+                        │
+                    Express Server ─── /health (keep-alive)
+                        │              /auth/linkedin (OAuth)
+                    Workflow Engine
+                        │
+              ┌─────────┼─────────┐
+           AI Service   │    LinkedIn API
+          (Gemini)      │    (OAuth + Post)
+                     Scheduler
+                    (node-cron)
+```
 
 ## Commands
 
 | Command | Description |
 |---|---|
 | `/start` | Welcome message |
-| `/generate` | Manually start a post workflow |
-| `/status` | Check current workflow state |
-| `/linkedin` | Check LinkedIn connection |
+| `/generate` | Start a post workflow |
+| `/status` | Current workflow state |
+| `/linkedin` | LinkedIn auth status |
 | `/cancel` | Cancel current workflow |
 | `/approve` | Approve pending post |
 | `/help` | Show help |
 
-## Architecture
-
-```
-Cron (9 AM daily) → AI generates topics → Telegram shows topics
-→ User picks topic → AI generates ideas → Telegram shows ideas
-→ User picks idea → AI drafts post → Telegram shows draft
-→ User approves/edits → Posts to LinkedIn
-```
-
 ## Tech Stack
 - **Runtime:** Node.js
-- **AI:** Google Gemini 2.0 Flash
-- **Bot:** Telegram Bot API
+- **AI:** Google Gemini 2.0 Flash (with fallback models)
+- **Bot:** Telegram Bot API (polling + webhook)
 - **Posting:** LinkedIn UGC API
 - **Scheduler:** node-cron
+- **Hosting:** Render (or any Node.js host)

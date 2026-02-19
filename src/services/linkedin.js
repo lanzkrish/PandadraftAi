@@ -62,28 +62,62 @@ async function exchangeCodeForTokens(code) {
 }
 
 /**
- * Save tokens to disk
+ * Save tokens to disk + log for env var backup
  */
 function saveTokens(tokenData) {
-  if (!fs.existsSync(TOKENS_DIR)) {
-    fs.mkdirSync(TOKENS_DIR, { recursive: true });
+  // Save to file (works locally; ephemeral on Render but OK for runtime)
+  try {
+    if (!fs.existsSync(TOKENS_DIR)) {
+      fs.mkdirSync(TOKENS_DIR, { recursive: true });
+    }
+    fs.writeFileSync(TOKENS_FILE, JSON.stringify(tokenData, null, 2));
+  } catch (err) {
+    logger.warn('Could not write token file (ephemeral FS?):', err.message);
   }
-  fs.writeFileSync(TOKENS_FILE, JSON.stringify(tokenData, null, 2));
-  logger.info('Tokens saved to disk');
+
+  // Log the token JSON so the user can copy it into LINKEDIN_TOKENS env var
+  // This is critical for Render where filesystem is ephemeral
+  logger.info('=== LINKEDIN_TOKENS (copy to env var for persistence) ===');
+  logger.info(JSON.stringify(tokenData));
+  logger.info('========================================================');
+
+  // Cache in memory
+  _tokenCache = tokenData;
 }
 
+// In-memory token cache (survives as long as process runs)
+let _tokenCache = null;
+
 /**
- * Load tokens from disk
+ * Load tokens from: memory cache → file → env var (in priority order)
  */
 function loadTokens() {
+  // 1. Memory cache (fastest)
+  if (_tokenCache) return _tokenCache;
+
+  // 2. File on disk
   try {
     if (fs.existsSync(TOKENS_FILE)) {
       const data = JSON.parse(fs.readFileSync(TOKENS_FILE, 'utf-8'));
+      _tokenCache = data;
       return data;
     }
   } catch (error) {
-    logger.error('Failed to load tokens:', error);
+    logger.warn('Could not read token file:', error.message);
   }
+
+  // 3. Environment variable (for Render / ephemeral filesystems)
+  if (config.linkedin.savedTokens) {
+    try {
+      const data = JSON.parse(config.linkedin.savedTokens);
+      _tokenCache = data;
+      logger.info('Loaded LinkedIn tokens from LINKEDIN_TOKENS env var');
+      return data;
+    } catch (error) {
+      logger.error('Failed to parse LINKEDIN_TOKENS env var:', error.message);
+    }
+  }
+
   return null;
 }
 
@@ -105,7 +139,7 @@ function isTokenValid() {
 async function refreshAccessToken() {
   const tokens = loadTokens();
   if (!tokens || !tokens.refresh_token) {
-    throw new Error('No refresh token available. Please re-authorize via /auth/linkedin');
+    throw new Error(`No refresh token available. Please re-authorize via ${config.appUrl}/auth/linkedin`);
   }
 
   try {
@@ -148,9 +182,7 @@ async function getAccessToken() {
       await refreshAccessToken();
     } else {
       throw new Error(
-        'LinkedIn not authorized. Visit http://localhost:' +
-          config.server.port +
-          '/auth/linkedin to authorize.'
+        `LinkedIn not authorized. Visit ${config.appUrl}/auth/linkedin to authorize.`
       );
     }
   }
@@ -257,6 +289,7 @@ function setupOAuthRoutes(app) {
             <h1>✅ LinkedIn Authorized!</h1>
             <p>AutoDraft AI is now connected to your LinkedIn account.</p>
             <p>You can close this window and go back to Telegram.</p>
+            ${config.isProduction ? '<p style="color: #666; font-size: 14px;">⚠️ Check server logs for the LINKEDIN_TOKENS value — add it to your Render env vars for persistence across deploys.</p>' : ''}
           </body>
         </html>
       `);
@@ -277,7 +310,7 @@ function setupOAuthRoutes(app) {
     const valid = isTokenValid();
     res.json({
       authorized: valid,
-      message: valid ? 'LinkedIn is connected' : 'Not authorized. Visit /auth/linkedin',
+      message: valid ? 'LinkedIn is connected' : `Not authorized. Visit ${config.appUrl}/auth/linkedin`,
     });
   });
 }

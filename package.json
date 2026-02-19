@@ -1,6 +1,6 @@
 {
   "name": "autodraft-ai",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AI-powered LinkedIn auto-poster with Telegram bot interface",
   "main": "src/index.js",
   "scripts": {
