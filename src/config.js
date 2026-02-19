@@ -63,9 +63,13 @@ const missing = required.filter(([, val]) => !val).map(([key]) => key);
 
 if (missing.length > 0) {
   console.error(
-    `\n❌ Missing required environment variables:\n${missing.map((k) => `   • ${k}`).join('\n')}\n\nCopy .env.example to .env and fill in your values.\n`
+    `\n⚠️ Missing required environment variables:\n${missing.map((k) => `   • ${k}`).join('\n')}\n\nCopy .env.example to .env and fill in your values.\n`
   );
-  process.exit(1);
+  // In production (Render), don't exit — let the server start so health checks pass
+  // The features requiring these vars will fail gracefully when used
+  if (!isProduction) {
+    process.exit(1);
+  }
 }
 
 module.exports = config;
