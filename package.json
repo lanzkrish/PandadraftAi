@@ -7,7 +7,12 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js"
   },
-  "keywords": ["linkedin", "telegram", "ai", "automation"],
+  "keywords": [
+    "linkedin",
+    "telegram",
+    "ai",
+    "automation"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -15,6 +20,7 @@
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "mongoose": "^9.2.1",
     "node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.66.0",
     "winston": "^3.17.0"

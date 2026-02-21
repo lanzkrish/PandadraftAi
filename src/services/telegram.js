@@ -1,222 +1,358 @@
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('../config');
 const logger = require('../utils/logger');
-const linkedin = require('../services/linkedin');
+const db = require('../db');
+const { PostWorkflow } = require('../workflow/postWorkflow');
 
-/**
- * Initialize and configure the Telegram bot
- * - Development: uses polling (long-poll Telegram servers)
- * - Production (Render): uses webhook (Telegram pushes updates to us)
- */
-function createTelegramBot(workflow, app) {
+const workflows = new Map();
+
+function getWorkflow(user, bot) {
+  const chatId = user.telegram_chat_id;
+  if (workflows.has(chatId)) return workflows.get(chatId);
+
+  const sendMessage = async (text) => {
+    try {
+      await bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+    } catch {
+      try { await bot.sendMessage(chatId, text.replace(/[*_`\[\]]/g, '')); } catch (e) {
+        logger.error(`Failed to send to ${chatId}`);
+      }
+    }
+  };
+
+  const sendInlineKeyboard = async (text, buttons) => {
+    try {
+      await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: buttons } });
+    } catch {
+      try {
+        await bot.sendMessage(chatId, text.replace(/[*_`\[\]]/g, ''), { reply_markup: { inline_keyboard: buttons } });
+      } catch (e) { logger.error(`Failed to send keyboard to ${chatId}`); }
+    }
+  };
+
+  const workflow = new PostWorkflow(user, { sendMessage, sendInlineKeyboard });
+  workflows.set(chatId, workflow);
+  return workflow;
+}
+
+function triggerWorkflowForUser(user, bot) {
+  const workflow = getWorkflow(user, bot);
+  workflow.start();
+}
+
+function createTelegramBot(app) {
   let bot;
+  const adminChatId = config.telegram.adminChatId;
 
   if (config.telegram.useWebhook) {
-    // Production: webhook mode (Render / cloud)
     bot = new TelegramBot(config.telegram.botToken, { webHook: false });
     const webhookUrl = `${config.appUrl}/bot${config.telegram.botToken}`;
-
-    // Set up webhook endpoint on Express
     app.post(`/bot${config.telegram.botToken}`, (req, res) => {
       bot.processUpdate(req.body);
       res.sendStatus(200);
     });
-
-    // Register webhook with Telegram
     bot.setWebHook(webhookUrl).then(() => {
       logger.info(`Telegram webhook set: ${config.appUrl}/bot<TOKEN>`);
-    }).catch((err) => {
-      logger.error('Failed to set Telegram webhook:', err.message);
-    });
+    }).catch((err) => logger.error('Webhook failed:', err.message));
   } else {
-    // Development: polling mode
     bot = new TelegramBot(config.telegram.botToken, { polling: true });
   }
 
-  const chatId = config.telegram.chatId;
+  function isAdmin(chatId) { return String(chatId) === String(adminChatId); }
 
-  // Helper: check if message is from the authorized user
-  function isAuthorized(msg) {
-    return String(msg.chat.id) === String(chatId);
-  }
-
-  // Helper: send a text message
-  async function sendMessage(text) {
+  async function sendTo(chatId, text) {
     try {
       await bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-    } catch (error) {
-      // Retry without markdown if formatting fails
-      try {
-        await bot.sendMessage(chatId, text.replace(/[*_`\[\]]/g, ''));
-      } catch (retryError) {
-        logger.error('Failed to send Telegram message:', retryError);
+    } catch {
+      try { await bot.sendMessage(chatId, text.replace(/[*_`\[\]]/g, '')); } catch (e) {
+        logger.error(`Failed to send to ${chatId}`);
       }
     }
   }
 
-  // Helper: send inline keyboard
-  async function sendInlineKeyboard(text, buttons) {
-    try {
-      await bot.sendMessage(chatId, text, {
-        parse_mode: 'Markdown',
-        reply_markup: {
-          inline_keyboard: buttons,
-        },
-      });
-    } catch (error) {
-      try {
-        await bot.sendMessage(chatId, text.replace(/[*_`\[\]]/g, ''), {
-          reply_markup: {
-            inline_keyboard: buttons,
-          },
-        });
-      } catch (retryError) {
-        logger.error('Failed to send inline keyboard:', retryError);
-      }
+  // ── /start ───────────────────────────────────────────────
+
+  bot.onText(/\/start/, async (msg) => {
+    const chatId = msg.chat.id;
+    const user = await db.getUserByChatId(chatId);
+
+    if (!user) {
+      sendTo(chatId, `👋 Welcome! You're not registered yet.\n\nAsk the admin to add you. Your Chat ID: \`${chatId}\``);
+      return;
     }
-  }
+    if (user.status !== 'active') {
+      sendTo(chatId, '⛔ Your account is paused. Contact the admin.');
+      return;
+    }
 
-  // Inject message senders into workflow
-  workflow.setMessageSenders({ sendMessage, sendInlineKeyboard });
+    const linkedIn = await db.isLinkedInTokenValid(user._id)
+      ? '✅ Connected'
+      : `❌ Not connected — [Connect LinkedIn](${config.appUrl}/auth/linkedin?user=${user._id})`;
 
-  // --- Command Handlers ---
-
-  bot.onText(/\/start/, (msg) => {
-    if (!isAuthorized(msg)) return;
-
-    sendMessage(
-      `👋 *Welcome to AutoDraft AI!*\n\n` +
-        `I help you create and publish LinkedIn posts using AI.\n\n` +
-        `*Commands:*\n` +
-        `🚀 /generate — Start creating a post\n` +
-        `📊 /status — Check current workflow status\n` +
-        `🔗 /linkedin — Check LinkedIn connection\n` +
-        `❌ /cancel — Cancel current workflow\n` +
-        `ℹ️ /help — Show this message\n\n` +
-        `I'll also ping you daily at your scheduled time to create a post!`
+    sendTo(chatId,
+      `👋 *Welcome, ${user.name || 'there'}!*\n\n` +
+      `LinkedIn: ${linkedIn}\n\n` +
+      `🚀 /generate — Create a post\n📊 /status — Status\n🔗 /linkedin — Connect LinkedIn\n` +
+      `👤 /myaccount — Account\n⚙️ /settings — Preferences\n📜 /history — Posts\n❌ /cancel — Cancel\nℹ️ /help — Help`
     );
   });
 
-  bot.onText(/\/help/, (msg) => {
-    if (!isAuthorized(msg)) return;
+  // ── /help ────────────────────────────────────────────────
 
-    sendMessage(
+  bot.onText(/\/help/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+
+    let help =
       `📖 *AutoDraft AI Help*\n\n` +
-        `*How it works:*\n` +
-        `1️⃣ I generate 5 topic suggestions\n` +
-        `2️⃣ You pick a topic\n` +
-        `3️⃣ I generate 3 post ideas\n` +
-        `4️⃣ You pick an idea\n` +
-        `5️⃣ I write the full post\n` +
-        `6️⃣ You review, edit, or approve\n` +
-        `7️⃣ I post it to LinkedIn! 🎉\n\n` +
-        `*Commands:*\n` +
-        `/generate — Start the workflow\n` +
-        `/status — Current workflow state\n` +
-        `/linkedin — LinkedIn auth status\n` +
-        `/cancel — Cancel current flow\n` +
-        `/approve — Approve pending post`
-    );
+      `/generate — Start workflow\n/status — Current state\n/linkedin — Connect LinkedIn\n` +
+      `/myaccount — Account info\n/settings — Preferences\n/history — Post history\n` +
+      `/cancel — Cancel\n/approve — Approve post`;
+
+    if (isAdmin(msg.chat.id)) {
+      help += `\n\n*Admin:*\n/admin\\_add \`<chatId>\` \`<name>\`\n/admin\\_list\n/admin\\_pause \`<chatId>\`\n/admin\\_activate \`<chatId>\`\n/admin\\_remove \`<chatId>\``;
+    }
+    sendTo(msg.chat.id, help);
   });
 
-  bot.onText(/\/generate/, (msg) => {
-    if (!isAuthorized(msg)) return;
+  // ── /generate ────────────────────────────────────────────
+
+  bot.onText(/\/generate/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user || user.status !== 'active') return;
+    const workflow = getWorkflow(user, bot);
     workflow.start();
   });
 
-  bot.onText(/\/status/, (msg) => {
-    if (!isAuthorized(msg)) return;
+  // ── /status ──────────────────────────────────────────────
 
-    const state = workflow.getState();
-    const stateMessages = {
-      IDLE: '😴 No active workflow. Use /generate to start.',
-      TOPICS_SENT: '📋 Waiting for you to select a topic.',
-      IDEAS_SENT: '💡 Waiting for you to select an idea.',
-      DRAFT_SENT: '📄 Post draft ready. Approve, edit, or regenerate.',
-      AWAITING_FEEDBACK: '✏️ Waiting for your edit feedback.',
-      POSTED: '✅ Post published!',
+  bot.onText(/\/status/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const workflow = workflows.get(String(user.telegram_chat_id));
+    const state = workflow ? workflow.getState() : 'IDLE';
+    const msgs = {
+      IDLE: '😴 No active workflow. Use /generate.',
+      TOPICS_SENT: '📋 Waiting for topic selection.',
+      IDEAS_SENT: '💡 Waiting for idea selection.',
+      DRAFT_SENT: '📄 Draft ready — approve, edit, or regenerate.',
+      AWAITING_FEEDBACK: '✏️ Waiting for your feedback.',
+      POSTED: '✅ Last post published!',
     };
-
-    sendMessage(`📊 *Workflow Status:* ${state}\n\n${stateMessages[state] || 'Unknown state'}`);
+    sendTo(msg.chat.id, `📊 *Status:* ${state}\n\n${msgs[state] || ''}`);
   });
 
-  bot.onText(/\/linkedin/, (msg) => {
-    if (!isAuthorized(msg)) return;
+  // ── /linkedin ────────────────────────────────────────────
 
-    const isValid = linkedin.isTokenValid();
-    if (isValid) {
-      sendMessage('✅ LinkedIn is connected and authorized.');
+  bot.onText(/\/linkedin/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const valid = await db.isLinkedInTokenValid(user._id);
+    if (valid) {
+      sendTo(msg.chat.id, '✅ LinkedIn is connected.');
     } else {
-      sendMessage(
-        `❌ LinkedIn is not connected.\n\nVisit this link to authorize:\n${config.appUrl}/auth/linkedin`
-      );
+      sendTo(msg.chat.id, `🔗 *Connect LinkedIn:*\n\n[Authorize](${config.appUrl}/auth/linkedin?user=${user._id})`);
     }
   });
 
-  bot.onText(/\/cancel/, (msg) => {
-    if (!isAuthorized(msg)) return;
+  // ── /myaccount ───────────────────────────────────────────
 
-    workflow.reset();
-    sendMessage('❌ Workflow cancelled. Use /generate to start a new one.');
+  bot.onText(/\/myaccount/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const stats = await db.getPostStats(user._id);
+    const li = await db.isLinkedInTokenValid(user._id) ? '✅' : '❌';
+    sendTo(msg.chat.id,
+      `👤 *Account*\n\n*Name:* ${user.name || '—'}\n*Status:* ${user.status}\n*LinkedIn:* ${li}\n` +
+      `*Org ID:* ${user.linkedin_org_id || 'Personal profile'}\n*Tone:* ${user.content_tone}\n` +
+      `*Categories:* ${user.content_categories || 'AI decides'}\n*Schedule:* ${user.cron_schedule} (${user.timezone})\n\n` +
+      `📊 ${stats.posted || 0} posted, ${stats.total || 0} total`
+    );
   });
 
-  bot.onText(/\/approve/, (msg) => {
-    if (!isAuthorized(msg)) return;
-    workflow.handleApproval();
+  // ── /settings ────────────────────────────────────────────
+
+  bot.onText(/\/settings/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    sendTo(msg.chat.id,
+      `⚙️ *Settings:*\n\n/set\\_tone \`<tone>\` — professional, casual, thought-leadership, storytelling\n` +
+      `/set\\_categories \`<cat1,cat2>\`\n/set\\_schedule \`<cron>\`\n/set\\_timezone \`<tz>\`\n/set\\_orgid \`<id>\``
+    );
   });
 
-  // --- Callback Query Handler (inline buttons) ---
+  bot.onText(/\/set_tone (.+)/, async (msg, match) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const tone = match[1].trim();
+    const valid = ['professional', 'casual', 'thought-leadership', 'storytelling'];
+    if (!valid.includes(tone)) { sendTo(msg.chat.id, `❌ Choose: ${valid.join(', ')}`); return; }
+    await db.updateUser(user._id, { content_tone: tone });
+    if (workflows.has(String(user.telegram_chat_id))) workflows.get(String(user.telegram_chat_id)).tone = tone;
+    sendTo(msg.chat.id, `✅ Tone: *${tone}*`);
+  });
+
+  bot.onText(/\/set_categories (.+)/, async (msg, match) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    await db.updateUser(user._id, { content_categories: match[1].trim() });
+    sendTo(msg.chat.id, `✅ Categories: *${match[1].trim()}*`);
+  });
+
+  bot.onText(/\/set_schedule (.+)/, async (msg, match) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    await db.updateUser(user._id, { cron_schedule: match[1].trim() });
+    sendTo(msg.chat.id, `✅ Schedule: *${match[1].trim()}*`);
+  });
+
+  bot.onText(/\/set_timezone (.+)/, async (msg, match) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    await db.updateUser(user._id, { timezone: match[1].trim() });
+    sendTo(msg.chat.id, `✅ Timezone: *${match[1].trim()}*`);
+  });
+
+  bot.onText(/\/set_orgid(.*)/, async (msg, match) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const orgId = (match[1] || '').trim();
+    await db.updateUser(user._id, { linkedin_org_id: orgId });
+    sendTo(msg.chat.id, orgId ? `✅ Org ID: *${orgId}* (company page)` : '✅ Org ID cleared (personal profile)');
+  });
+
+  // ── /history ─────────────────────────────────────────────
+
+  bot.onText(/\/history/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const posts = await db.getPostHistory(user._id, 5);
+    if (posts.length === 0) { sendTo(msg.chat.id, '📜 No posts yet. Use /generate!'); return; }
+
+    let text = '📜 *Recent Posts:*\n\n';
+    posts.forEach((p, i) => {
+      const icon = p.status === 'posted' ? '✅' : p.status === 'failed' ? '❌' : '📝';
+      text += `${icon} *${i + 1}.* ${p.topic || 'Untitled'} — ${p.status}\n`;
+    });
+    sendTo(msg.chat.id, text);
+  });
+
+  // ── /cancel, /approve ────────────────────────────────────
+
+  bot.onText(/\/cancel/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    if (workflows.has(String(user.telegram_chat_id))) workflows.get(String(user.telegram_chat_id)).reset();
+    sendTo(msg.chat.id, '❌ Cancelled. Use /generate to start over.');
+  });
+
+  bot.onText(/\/approve/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const wf = workflows.get(String(user.telegram_chat_id));
+    if (wf) wf.handleApproval();
+  });
+
+  // ══════════════════════════════════════════════════════════
+  //  ADMIN COMMANDS
+  // ══════════════════════════════════════════════════════════
+
+  bot.onText(/\/admin_add (.+)/, async (msg, match) => {
+    if (!isAdmin(msg.chat.id)) return;
+    const parts = match[1].trim().split(/\s+/);
+    const chatId = parts[0];
+    const name = parts.slice(1).join(' ') || 'User';
+
+    if (!chatId || isNaN(chatId)) { sendTo(msg.chat.id, '❌ Usage: /admin\\_add `<chatId>` `<name>`'); return; }
+
+    const existing = await db.getUserByChatId(chatId);
+    if (existing) { sendTo(msg.chat.id, `⚠️ Already exists: ${existing.name}`); return; }
+
+    const user = await db.createUser({ chatId, name, isAdmin: false });
+    sendTo(msg.chat.id, `✅ *${user.name}* added!\nChat ID: \`${user.telegram_chat_id}\`\nDB ID: \`${user._id}\``);
+    sendTo(chatId, `🎉 *You've been added to AutoDraft AI!*\n\n/start to begin.\n[Connect LinkedIn](${config.appUrl}/auth/linkedin?user=${user._id})`);
+    logger.info(`Admin added user: ${name} (${chatId})`);
+  });
+
+  bot.onText(/\/admin_list/, async (msg) => {
+    if (!isAdmin(msg.chat.id)) return;
+    const users = await db.getAllUsers();
+    if (users.length === 0) { sendTo(msg.chat.id, '📋 No users yet.'); return; }
+
+    let text = `📋 *Users (${users.length}):*\n\n`;
+    for (const u of users) {
+      const li = await db.isLinkedInTokenValid(u._id) ? '🟢' : '🔴';
+      const stats = await db.getPostStats(u._id);
+      const badge = u.is_admin ? ' 👑' : '';
+      text += `${u.status === 'active' ? '✅' : '⏸️'} *${u.name || 'Unnamed'}*${badge}\n`;
+      text += `   \`${u.telegram_chat_id}\` | LI: ${li} | Posts: ${stats.posted || 0}\n\n`;
+    }
+    sendTo(msg.chat.id, text);
+  });
+
+  bot.onText(/\/admin_pause (.+)/, async (msg, match) => {
+    if (!isAdmin(msg.chat.id)) return;
+    const chatId = match[1].trim();
+    const user = await db.getUserByChatId(chatId);
+    if (!user) { sendTo(msg.chat.id, `❌ Not found: \`${chatId}\``); return; }
+    await db.setUserStatus(chatId, 'paused');
+    sendTo(msg.chat.id, `⏸️ *${user.name}* paused.`);
+  });
+
+  bot.onText(/\/admin_activate (.+)/, async (msg, match) => {
+    if (!isAdmin(msg.chat.id)) return;
+    const chatId = match[1].trim();
+    const user = await db.getUserByChatId(chatId);
+    if (!user) { sendTo(msg.chat.id, `❌ Not found: \`${chatId}\``); return; }
+    await db.setUserStatus(chatId, 'active');
+    sendTo(msg.chat.id, `✅ *${user.name}* activated.`);
+  });
+
+  bot.onText(/\/admin_remove (.+)/, async (msg, match) => {
+    if (!isAdmin(msg.chat.id)) return;
+    const chatId = match[1].trim();
+    const user = await db.getUserByChatId(chatId);
+    if (!user) { sendTo(msg.chat.id, `❌ Not found: \`${chatId}\``); return; }
+    await db.setUserStatus(chatId, 'disabled');
+    workflows.delete(String(chatId));
+    sendTo(msg.chat.id, `🗑️ *${user.name}* disabled.`);
+  });
+
+  // ── Callback Queries (inline buttons) ────────────────────
 
   bot.on('callback_query', async (query) => {
-    if (String(query.message.chat.id) !== String(chatId)) return;
+    const chatId = String(query.message.chat.id);
+    const user = await db.getUserByChatId(chatId);
+    if (!user || user.status !== 'active') return;
 
+    await bot.answerCallbackQuery(query.id);
+    const workflow = getWorkflow(user, bot);
     const data = query.data;
 
-    // Acknowledge the button press
-    await bot.answerCallbackQuery(query.id);
-
-    if (data.startsWith('topic_')) {
-      const index = parseInt(data.replace('topic_', ''), 10);
-      await workflow.handleTopicSelection(index);
-    } else if (data.startsWith('idea_')) {
-      const index = parseInt(data.replace('idea_', ''), 10);
-      await workflow.handleIdeaSelection(index);
-    } else if (data === 'approve') {
-      await workflow.handleApproval();
-    } else if (data === 'edit') {
-      await workflow.handleEditRequest();
-    } else if (data === 'regenerate') {
-      await workflow.handleRegenerate();
-    } else if (data === 'cancel') {
-      workflow.reset();
-      await sendMessage('❌ Workflow cancelled. Use /generate to start a new one.');
-    }
+    if (data.startsWith('topic_')) await workflow.handleTopicSelection(parseInt(data.replace('topic_', ''), 10));
+    else if (data.startsWith('idea_')) await workflow.handleIdeaSelection(parseInt(data.replace('idea_', ''), 10));
+    else if (data === 'approve') await workflow.handleApproval();
+    else if (data === 'edit') await workflow.handleEditRequest();
+    else if (data === 'regenerate') await workflow.handleRegenerate();
+    else if (data === 'cancel') { workflow.reset(); sendTo(chatId, '❌ Cancelled.'); }
   });
 
-  // --- Free-text Message Handler (for feedback) ---
+  // ── Free-text (feedback) ─────────────────────────────────
 
   bot.on('message', async (msg) => {
-    if (!isAuthorized(msg)) return;
-    if (msg.text && msg.text.startsWith('/')) return; // Skip commands
-
-    // If awaiting feedback, handle it
-    if (msg.text) {
-      const handled = await workflow.handleFeedback(msg.text);
-      if (!handled) {
-        // Not in feedback state — ignore
-      }
-    }
+    if (msg.text && msg.text.startsWith('/')) return;
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user || user.status !== 'active') return;
+    const chatId = String(user.telegram_chat_id);
+    if (workflows.has(chatId) && msg.text) await workflows.get(chatId).handleFeedback(msg.text);
   });
 
-  // Error handling
   bot.on('polling_error', (error) => {
-    if (!config.telegram.useWebhook) {
-      logger.error('Telegram polling error:', error);
-    }
+    if (!config.telegram.useWebhook) logger.error('Telegram polling error:', error.message);
   });
 
   logger.info(`Telegram bot started (${config.telegram.useWebhook ? 'webhook' : 'polling'} mode)`);
-  return bot;
+  return { bot, triggerWorkflowForUser: (user) => triggerWorkflowForUser(user, bot) };
 }
 
 module.exports = { createTelegramBot };

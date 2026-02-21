@@ -43,15 +43,17 @@ const TONE_DESCRIPTIONS = {
   storytelling: 'narrative-driven, engaging, using personal anecdotes and lessons learned',
 };
 
-const toneDesc = TONE_DESCRIPTIONS[config.content.tone] || TONE_DESCRIPTIONS.professional;
+function getToneDesc(tone) {
+  return TONE_DESCRIPTIONS[tone] || TONE_DESCRIPTIONS.professional;
+}
 
 /**
  * Generate 5 post topics for LinkedIn
  */
-async function generateTopics() {
+async function generateTopics(categories = []) {
   const categoriesHint =
-    config.content.categories.length > 0
-      ? `Focus on these areas: ${config.content.categories.join(', ')}.`
+    categories.length > 0
+      ? `Focus on these areas: ${categories.join(', ')}.`
       : 'Choose trending and engaging professional topics.';
 
   const prompt = `You are a LinkedIn content strategist. Generate exactly 5 unique, compelling LinkedIn post topics that would drive engagement and showcase thought leadership.
@@ -88,7 +90,8 @@ Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. E
 /**
  * Generate 3 post ideas for a selected topic
  */
-async function generateIdeas(topic) {
+async function generateIdeas(topic, tone = 'professional') {
+  const toneDesc = getToneDesc(tone);
   const prompt = `You are a LinkedIn content creator. For the topic "${topic}", generate exactly 3 unique post ideas.
 
 Each idea should include:
@@ -120,7 +123,8 @@ Return ONLY a JSON array of 3 objects with "hook" and "description" keys, no mar
 /**
  * Generate a full LinkedIn post for a selected idea
  */
-async function generatePost(idea) {
+async function generatePost(idea, tone = 'professional') {
+  const toneDesc = getToneDesc(tone);
   const prompt = `You are an expert LinkedIn content writer. Create a full LinkedIn post based on this idea:
 
 Hook: ${idea.hook}
@@ -154,7 +158,8 @@ Return ONLY the post text, nothing else. No explanations, no labels.`;
 /**
  * Revise a post based on user feedback
  */
-async function revisePost(currentPost, feedback) {
+async function revisePost(currentPost, feedback, tone = 'professional') {
+  const toneDesc = getToneDesc(tone);
   const prompt = `You are an expert LinkedIn content writer. Revise the following LinkedIn post based on the user's feedback.
 
 Current Post:

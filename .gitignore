@@ -1,6 +1,7 @@
 node_modules/
 .env
 tokens/
+data/
 logs/
 *.log
 .DS_Store
