@@ -65,11 +65,17 @@ async function getUserById(id) {
 }
 
 async function createUser({ chatId, username, name, isAdmin = false }) {
+  // Import config here to avoid circular dependency at module level
+  const config = require('./config');
   const user = await User.create({
     telegram_chat_id: String(chatId),
     telegram_username: username || null,
     name: name || null,
     is_admin: isAdmin,
+    content_categories: config.defaults.categories.join(', '),
+    content_tone: config.defaults.tone,
+    cron_schedule: config.defaults.cronSchedule,
+    timezone: config.defaults.timezone,
   });
   return user.toObject();
 }
