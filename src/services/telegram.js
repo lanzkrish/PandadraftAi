@@ -133,6 +133,8 @@ function createTelegramBot(app) {
     const state = workflow ? workflow.getState() : 'IDLE';
     const msgs = {
       IDLE: '😴 No active workflow. Use /generate.',
+      AWAITING_MODE: '🚀 Choose a mode: auto-generate or enter keyword.',
+      AWAITING_KEYWORD: '✍️ Waiting for you to type a keyword.',
       TOPICS_SENT: '📋 Waiting for topic selection.',
       IDEAS_SENT: '💡 Waiting for idea selection.',
       DRAFT_SENT: '📄 Draft ready — approve, edit, or regenerate.',
@@ -329,7 +331,8 @@ function createTelegramBot(app) {
     const workflow = getWorkflow(user, bot);
     const data = query.data;
 
-    if (data.startsWith('topic_')) await workflow.handleTopicSelection(parseInt(data.replace('topic_', ''), 10));
+    if (data.startsWith('mode_')) await workflow.handleModeSelection(data.replace('mode_', ''));
+    else if (data.startsWith('topic_')) await workflow.handleTopicSelection(parseInt(data.replace('topic_', ''), 10));
     else if (data.startsWith('idea_')) await workflow.handleIdeaSelection(parseInt(data.replace('idea_', ''), 10));
     else if (data === 'approve') await workflow.handleApproval();
     else if (data === 'edit') await workflow.handleEditRequest();
@@ -344,7 +347,7 @@ function createTelegramBot(app) {
     const user = await db.getUserByChatId(msg.chat.id);
     if (!user || user.status !== 'active') return;
     const chatId = String(user.telegram_chat_id);
-    if (workflows.has(chatId) && msg.text) await workflows.get(chatId).handleFeedback(msg.text);
+    if (workflows.has(chatId) && msg.text) await workflows.get(chatId).handleTextInput(msg.text);
   });
 
   bot.on('polling_error', (error) => {

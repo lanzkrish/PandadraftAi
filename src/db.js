@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   linkedin_org_id: { type: String, default: '' },
   content_categories: { type: String, default: '' },
   content_tone: { type: String, default: 'professional' },
+  keywords: { type: [String], default: [] },  // User-entered keywords, used to enrich auto-generated topics
   cron_schedule: { type: String, default: '0 9 * * *' },
   timezone: { type: String, default: 'Asia/Kolkata' },
   is_admin: { type: Boolean, default: false },
@@ -105,6 +106,15 @@ async function setUserStatus(chatId, status) {
   await User.updateOne({ telegram_chat_id: String(chatId) }, { $set: { status } });
 }
 
+async function addKeyword(userId, keyword) {
+  const kw = keyword.trim().toLowerCase();
+  // Add only if not already present, cap at 50 keywords
+  await User.updateOne(
+    { _id: userId, keywords: { $ne: kw } },
+    { $push: { keywords: { $each: [kw], $slice: -50 } } }
+  );
+}
+
 // ── LinkedIn Token Operations ────────────────────────────────
 
 async function saveLinkedInTokens(userId, tokens) {
@@ -185,6 +195,7 @@ module.exports = {
   getAllActiveUsers,
   getAllUsers,
   setUserStatus,
+  addKeyword,
   // LinkedIn tokens
   saveLinkedInTokens,
   getLinkedInTokens,

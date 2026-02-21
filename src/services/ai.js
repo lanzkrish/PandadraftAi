@@ -7,6 +7,16 @@ const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
 // Primary and fallback models
 const MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
 
+// STRICT rule appended to every content-generation prompt
+const NO_TEMPLATE_RULE = `
+
+CRITICAL RULES — NEVER BREAK THESE:
+- NEVER use placeholder text like [Your Name], [Your Company], [Company Name], [Industry], [X years], [Number], etc.
+- NEVER use brackets [] for fill-in-the-blank templates anywhere in the output.
+- ALL content must be complete, ready-to-post, and contain NO blanks or variables.
+- Write as if you ARE the person posting. Use first person ("I", "we", "my") naturally.
+- If you need a specific detail, invent a realistic, concrete example instead of using a placeholder.`;
+
 /**
  * Call Gemini with automatic retry + model fallback on rate limits
  */
@@ -21,19 +31,19 @@ async function callWithRetry(prompt, maxRetries = 3) {
       } catch (error) {
         const is429 = error.message?.includes('429') || error.message?.includes('quota');
         if (is429 && attempt < maxRetries) {
-          const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+          const delay = Math.pow(2, attempt) * 1000;
           logger.warn(`Rate limited (${modelName}), retrying in ${delay / 1000}s...`);
           await new Promise((r) => setTimeout(r, delay));
         } else if (is429) {
           logger.warn(`All retries exhausted for ${modelName}, trying next model...`);
-          break; // Try next model
+          break;
         } else {
-          throw error; // Non-rate-limit error, throw immediately
+          throw error;
         }
       }
     }
   }
-  throw new Error('All AI models rate-limited. Please try again later or check your Gemini API quota at https://ai.google.dev/gemini-api/docs/rate-limits');
+  throw new Error('All AI models rate-limited. Please try again later.');
 }
 
 const TONE_DESCRIPTIONS = {
@@ -48,7 +58,7 @@ function getToneDesc(tone) {
 }
 
 /**
- * Generate 5 post topics for LinkedIn
+ * Generate 5 post topics from user's configured categories
  */
 async function generateTopics(categories = []) {
   const categoriesHint =
@@ -65,13 +75,13 @@ Requirements:
 - Topics should be timely and relevant to current trends
 - Mix between educational, inspirational, and discussion-provoking topics
 - Each topic should be a concise 1-line title (max 10 words)
+${NO_TEMPLATE_RULE}
 
 Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. Example:
 ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"]`;
 
   try {
     const text = await callWithRetry(prompt);
-    // Strip markdown code blocks if present
     const cleaned = text.replace(/```(?:json)?\n?/g, '').trim();
     const topics = JSON.parse(cleaned);
 
@@ -88,6 +98,47 @@ Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. E
 }
 
 /**
+ * Generate 5 topics related to a specific keyword the user entered
+ */
+async function generateTopicsFromKeyword(keyword, categories = []) {
+  const contextHint =
+    categories.length > 0
+      ? `The user's general area of expertise includes: ${categories.join(', ')}. Use this as context.`
+      : '';
+
+  const prompt = `You are a LinkedIn content strategist. The user wants to write a post about: "${keyword}"
+
+Generate exactly 5 unique, specific LinkedIn post topics related to "${keyword}".
+${contextHint}
+
+Requirements:
+- Each topic must be directly related to "${keyword}"
+- Each topic should be specific and actionable, not vague
+- Mix between educational, opinion-based, and experience-sharing angles
+- Each topic should be a concise 1-line title (max 10 words)
+${NO_TEMPLATE_RULE}
+
+Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. Example:
+["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"]`;
+
+  try {
+    const text = await callWithRetry(prompt);
+    const cleaned = text.replace(/```(?:json)?\n?/g, '').trim();
+    const topics = JSON.parse(cleaned);
+
+    if (!Array.isArray(topics) || topics.length === 0) {
+      throw new Error('Invalid topics format from AI');
+    }
+
+    logger.info(`Generated ${topics.length} topics for keyword: "${keyword}"`);
+    return topics.slice(0, 5);
+  } catch (error) {
+    logger.error('Failed to generate topics from keyword:', error);
+    throw error;
+  }
+}
+
+/**
  * Generate 3 post ideas for a selected topic
  */
 async function generateIdeas(topic, tone = 'professional') {
@@ -99,6 +150,7 @@ Each idea should include:
 - A brief description of what the post will cover (2-3 sentences)
 
 The tone should be ${toneDesc}.
+${NO_TEMPLATE_RULE}
 
 Return ONLY a JSON array of 3 objects with "hook" and "description" keys, no markdown formatting, no code blocks. Example:
 [{"hook": "Hook text here...", "description": "Description here..."}, ...]`;
@@ -141,12 +193,12 @@ Requirements:
 - Use line breaks generously for readability
 - Include 1-2 relevant emojis per paragraph (don't overdo it)
 - Do NOT use markdown formatting — plain text only
+${NO_TEMPLATE_RULE}
 
 Return ONLY the post text, nothing else. No explanations, no labels.`;
 
   try {
     const post = await callWithRetry(prompt);
-
     logger.info(`Generated post (${post.split(/\s+/).length} words)`);
     return post;
   } catch (error) {
@@ -176,12 +228,12 @@ Requirements:
 - Keep hashtags relevant
 - Keep the tone ${toneDesc}
 - Do NOT use markdown formatting — plain text only
+${NO_TEMPLATE_RULE}
 
 Return ONLY the revised post text, nothing else.`;
 
   try {
     const revisedPost = await callWithRetry(prompt);
-
     logger.info('Post revised based on feedback');
     return revisedPost;
   } catch (error) {
@@ -192,6 +244,7 @@ Return ONLY the revised post text, nothing else.`;
 
 module.exports = {
   generateTopics,
+  generateTopicsFromKeyword,
   generateIdeas,
   generatePost,
   revisePost,

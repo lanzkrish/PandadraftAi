@@ -5,6 +5,8 @@ const db = require('../db');
 
 const STATE = {
   IDLE: 'IDLE',
+  AWAITING_MODE: 'AWAITING_MODE',       // Waiting for user to pick "default" or "custom keyword"
+  AWAITING_KEYWORD: 'AWAITING_KEYWORD', // Waiting for user to type a keyword
   TOPICS_SENT: 'TOPICS_SENT',
   IDEAS_SENT: 'IDEAS_SENT',
   DRAFT_SENT: 'DRAFT_SENT',
@@ -42,15 +44,88 @@ class PostWorkflow {
     logger.info(`Workflow reset for user ${this.userId}`);
   }
 
+  /**
+   * Start — show the mode selection (default topics or enter keyword)
+   */
   async start() {
     if (this.state !== STATE.IDLE) {
       await this.sendMessage('⚠️ A workflow is already in progress. Use /cancel to reset.');
       return;
     }
 
+    this.state = STATE.AWAITING_MODE;
+    await this.sendInlineKeyboard(
+      '🚀 *How do you want to create your post?*\n\nPick a mode:',
+      [
+        [{ text: '🎲 Auto-Generate Topics', callback_data: 'mode_default' }],
+        [{ text: '✍️ Enter a Keyword / Topic', callback_data: 'mode_keyword' }],
+      ]
+    );
+  }
+
+  /**
+   * Handle mode selection — "default" or "keyword"
+   */
+  async handleModeSelection(mode) {
+    if (this.state !== STATE.AWAITING_MODE) return;
+
+    if (mode === 'default') {
+      await this.generateDefaultTopics();
+    } else if (mode === 'keyword') {
+      this.state = STATE.AWAITING_KEYWORD;
+      await this.sendMessage(
+        '✍️ *Type a keyword or topic* you want to write about.\n\nExamples: `AI`, `startup funding`, `remote work`, `React performance`'
+      );
+    }
+  }
+
+  /**
+   * Handle keyword input — generate topics from that keyword
+   */
+  async handleKeywordInput(keyword) {
+    if (this.state !== STATE.AWAITING_KEYWORD) return false;
+
     try {
-      await this.sendMessage('🚀 Starting LinkedIn post workflow...\n\n🤖 Generating topics...');
-      this.data.topics = await ai.generateTopics(this.categories);
+      // Save keyword to user's profile for future auto-generation
+      await db.addKeyword(this.userId, keyword);
+
+      await this.sendMessage(`🔍 Generating topics for: *${keyword}*...`);
+      this.data.topics = await ai.generateTopicsFromKeyword(keyword, this.categories);
+      this.state = STATE.TOPICS_SENT;
+
+      const buttons = this.data.topics.map((topic, i) => [
+        { text: topic, callback_data: `topic_${i}` },
+      ]);
+
+      await this.sendInlineKeyboard(
+        `📋 *Topics for "${keyword}":*\n\nPick one:`,
+        buttons
+      );
+      logger.info(`Keyword topics sent to user ${this.userId} for: "${keyword}"`);
+      return true;
+    } catch (error) {
+      logger.error(`Error generating topics from keyword for user ${this.userId}:`, error);
+      await this.sendMessage(`❌ Error: ${error.message}\n\nUse /generate to try again.`);
+      this.reset();
+      return true;
+    }
+  }
+
+  /**
+   * Generate topics from the user's default categories
+   */
+  async generateDefaultTopics() {
+    try {
+      // Include saved keywords as extra context for richer topics
+      const user = await db.getUserById(this.userId);
+      const savedKeywords = user?.keywords || [];
+      const allContext = [...this.categories];
+      if (savedKeywords.length > 0) {
+        allContext.push(...savedKeywords.slice(-10)); // last 10 keywords
+      }
+
+      await this.sendMessage('🤖 Generating topics from your interests...');
+      this.data.topics = await ai.generateTopics(allContext);
       this.state = STATE.TOPICS_SENT;
 
       const buttons = this.data.topics.map((topic, i) => [
@@ -61,7 +136,7 @@ class PostWorkflow {
         '📋 *Choose a topic for today\'s post:*\n\nPick one that resonates:',
         buttons
       );
-      logger.info(`Topics sent to user ${this.userId}`);
+      logger.info(`Default topics sent to user ${this.userId}`);
     } catch (error) {
       logger.error(`Error starting workflow for user ${this.userId}:`, error);
       await this.sendMessage(`❌ Error generating topics: ${error.message}\n\nUse /generate to try again.`);
@@ -180,6 +255,19 @@ class PostWorkflow {
     await this.sendMessage('🔄 Regenerating...');
     this.state = STATE.IDEAS_SENT;
     await this.handleIdeaSelection(this.data.ideas.indexOf(this.data.selectedIdea));
+  }
+
+  /**
+   * Handle any free-text input — routes to keyword or feedback depending on state
+   */
+  async handleTextInput(text) {
+    if (this.state === STATE.AWAITING_KEYWORD) {
+      return await this.handleKeywordInput(text);
+    }
+    if (this.state === STATE.AWAITING_FEEDBACK) {
+      return await this.handleFeedback(text);
+    }
+    return false;
   }
 }
 
