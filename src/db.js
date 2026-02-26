@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   telegram_chat_id: { type: String, unique: true, required: true, index: true },
   telegram_username: { type: String, default: null },
   name: { type: String, default: null },
+  profession: { type: String, default: null },
+  domain: { type: String, default: null },
   status: { type: String, default: 'active', enum: ['active', 'paused', 'disabled'] },
   linkedin_org_id: { type: String, default: '' },
   content_categories: { type: String, default: '' },
@@ -83,7 +85,7 @@ async function createUser({ chatId, username, name, isAdmin = false }) {
 
 async function updateUser(id, fields) {
   const allowed = [
-    'name', 'status', 'linkedin_org_id', 'content_categories',
+    'name', 'profession', 'domain', 'status', 'linkedin_org_id', 'content_categories',
     'content_tone', 'cron_schedule', 'timezone', 'telegram_username',
   ];
   const update = {};
@@ -113,6 +115,20 @@ async function addKeyword(userId, keyword) {
     { _id: userId, keywords: { $ne: kw } },
     { $push: { keywords: { $each: [kw], $slice: -50 } } }
   );
+}
+
+async function deleteKeyword(userId, keyword) {
+  const kw = keyword.trim().toLowerCase();
+  await User.updateOne({ _id: userId }, { $pull: { keywords: kw } });
+}
+
+async function resetKeywords(userId, defaultKeywords = []) {
+  await User.updateOne({ _id: userId }, { $set: { keywords: defaultKeywords } });
+}
+
+async function getKeywords(userId) {
+  const user = await User.findById(userId).select('keywords').lean();
+  return user?.keywords || [];
 }
 
 // ── LinkedIn Token Operations ────────────────────────────────
@@ -196,6 +212,9 @@ module.exports = {
   getAllUsers,
   setUserStatus,
   addKeyword,
+  deleteKeyword,
+  resetKeywords,
+  getKeywords,
   // LinkedIn tokens
   saveLinkedInTokens,
   getLinkedInTokens,

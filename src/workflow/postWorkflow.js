@@ -30,10 +30,9 @@ class PostWorkflow {
     this.sendMessage = sendMessage;
     this.sendInlineKeyboard = sendInlineKeyboard;
 
-    this.categories = user.content_categories
-      ? user.content_categories.split(',').map((c) => c.trim()).filter(Boolean)
-      : [];
+    this.keywords = user.keywords || [];
     this.tone = user.content_tone || 'professional';
+    this.isOrgPost = Boolean(user.linkedin_org_id);
   }
 
   getState() { return this.state; }
@@ -90,7 +89,7 @@ class PostWorkflow {
       await db.addKeyword(this.userId, keyword);
 
       await this.sendMessage(`🔍 Generating topics for: *${keyword}*...`);
-      this.data.topics = await ai.generateTopicsFromKeyword(keyword, this.categories);
+      this.data.topics = await ai.generateTopicsFromKeyword(keyword, this.keywords, this.isOrgPost);
       this.state = STATE.TOPICS_SENT;
 
       const buttons = this.data.topics.map((topic, i) => [
@@ -112,20 +111,16 @@ class PostWorkflow {
   }
 
   /**
-   * Generate topics from the user's default categories
+   * Generate topics from the user's keywords
    */
   async generateDefaultTopics() {
     try {
-      // Include saved keywords as extra context for richer topics
+      // Fetch latest keywords from DB
       const user = await db.getUserById(this.userId);
-      const savedKeywords = user?.keywords || [];
-      const allContext = [...this.categories];
-      if (savedKeywords.length > 0) {
-        allContext.push(...savedKeywords.slice(-10)); // last 10 keywords
-      }
+      const keywords = user?.keywords || [];
 
-      await this.sendMessage('🤖 Generating topics from your interests...');
-      this.data.topics = await ai.generateTopics(allContext);
+      await this.sendMessage('🤖 Generating topics from your keywords...');
+      this.data.topics = await ai.generateTopics(keywords, this.isOrgPost);
       this.state = STATE.TOPICS_SENT;
 
       const buttons = this.data.topics.map((topic, i) => [
@@ -150,7 +145,7 @@ class PostWorkflow {
       this.data.selectedTopic = this.data.topics[topicIndex];
       await this.sendMessage(`✅ Topic: *${this.data.selectedTopic}*\n\n🤖 Generating ideas...`);
 
-      this.data.ideas = await ai.generateIdeas(this.data.selectedTopic, this.tone);
+      this.data.ideas = await ai.generateIdeas(this.data.selectedTopic, this.tone, this.isOrgPost);
       this.state = STATE.IDEAS_SENT;
 
       const buttons = this.data.ideas.map((idea, i) => [
@@ -176,7 +171,7 @@ class PostWorkflow {
       this.data.selectedIdea = this.data.ideas[ideaIndex];
       await this.sendMessage('✅ Idea selected!\n\n🤖 Crafting your post...');
 
-      this.data.currentPost = await ai.generatePost(this.data.selectedIdea, this.tone);
+      this.data.currentPost = await ai.generatePost(this.data.selectedIdea, this.tone, this.isOrgPost);
       this.state = STATE.DRAFT_SENT;
 
       const post = await db.savePostHistory(this.userId, {
@@ -233,7 +228,7 @@ class PostWorkflow {
     if (this.state !== STATE.AWAITING_FEEDBACK) return false;
     try {
       await this.sendMessage('🤖 Revising...');
-      this.data.currentPost = await ai.revisePost(this.data.currentPost, feedback, this.tone);
+      this.data.currentPost = await ai.revisePost(this.data.currentPost, feedback, this.tone, this.isOrgPost);
       this.state = STATE.DRAFT_SENT;
 
       await this.sendMessage(`📄 *Revised post:*\n\n---\n${this.data.currentPost}\n---`);

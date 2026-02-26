@@ -60,11 +60,15 @@ function getToneDesc(tone) {
 /**
  * Generate 5 post topics from user's configured categories
  */
-async function generateTopics(categories = []) {
+async function generateTopics(categories = [], isOrgPost = false) {
   const categoriesHint =
     categories.length > 0
       ? `Focus on these areas: ${categories.join(', ')}.`
       : 'Choose trending and engaging professional topics.';
+
+  const voiceRule = isOrgPost
+    ? `\n- These topics are for an ORGANIZATION / COMPANY page, NOT a personal profile\n- Topics must be about industry trends, data, company insights, market analysis, or thought leadership\n- Do NOT suggest topics about personal stories, personal journeys, or individual experiences\n- Avoid topics like "My experience with...", "From X to Y journey", "Lessons I learned"\n- Good examples: "How AI is reshaping supply chains in 2025", "5 enterprise cloud trends to watch"`
+    : '';
 
   const prompt = `You are a LinkedIn content strategist. Generate exactly 5 unique, compelling LinkedIn post topics that would drive engagement and showcase thought leadership.
 
@@ -74,7 +78,7 @@ Requirements:
 - Each topic should be specific, not generic
 - Topics should be timely and relevant to current trends
 - Mix between educational, inspirational, and discussion-provoking topics
-- Each topic should be a concise 1-line title (max 10 words)
+- Each topic should be a concise 1-line title (max 10 words)${voiceRule}
 ${NO_TEMPLATE_RULE}
 
 Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. Example:
@@ -82,7 +86,7 @@ Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. E
 
   try {
     const text = await callWithRetry(prompt);
-    const cleaned = text.replace(/```(?:json)?\n?/g, '').trim();
+    const cleaned = text.replace(/\`\`\`(?:json)?\n?/g, '').trim();
     const topics = JSON.parse(cleaned);
 
     if (!Array.isArray(topics) || topics.length === 0) {
@@ -100,11 +104,15 @@ Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. E
 /**
  * Generate 5 topics related to a specific keyword the user entered
  */
-async function generateTopicsFromKeyword(keyword, categories = []) {
+async function generateTopicsFromKeyword(keyword, categories = [], isOrgPost = false) {
   const contextHint =
     categories.length > 0
       ? `The user's general area of expertise includes: ${categories.join(', ')}. Use this as context.`
       : '';
+
+  const voiceRule = isOrgPost
+    ? `\n- These topics are for an ORGANIZATION / COMPANY page, NOT a personal profile\n- Topics must be about industry trends, data, company insights, or market analysis related to "${keyword}"\n- Do NOT suggest topics about personal stories, personal journeys, or individual experiences\n- Avoid topics like "My experience with...", "From X to Y journey", "Lessons I learned"\n- Focus on facts, research, and professional analysis`
+    : '';
 
   const prompt = `You are a LinkedIn content strategist. The user wants to write a post about: "${keyword}"
 
@@ -114,8 +122,8 @@ ${contextHint}
 Requirements:
 - Each topic must be directly related to "${keyword}"
 - Each topic should be specific and actionable, not vague
-- Mix between educational, opinion-based, and experience-sharing angles
-- Each topic should be a concise 1-line title (max 10 words)
+- Mix between educational, opinion-based, and ${isOrgPost ? 'industry analysis' : 'experience-sharing'} angles
+- Each topic should be a concise 1-line title (max 10 words)${voiceRule}
 ${NO_TEMPLATE_RULE}
 
 Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. Example:
@@ -123,7 +131,7 @@ Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. E
 
   try {
     const text = await callWithRetry(prompt);
-    const cleaned = text.replace(/```(?:json)?\n?/g, '').trim();
+    const cleaned = text.replace(/\`\`\`(?:json)?\n?/g, '').trim();
     const topics = JSON.parse(cleaned);
 
     if (!Array.isArray(topics) || topics.length === 0) {
@@ -141,8 +149,12 @@ Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. E
 /**
  * Generate 3 post ideas for a selected topic
  */
-async function generateIdeas(topic, tone = 'professional') {
+async function generateIdeas(topic, tone = 'professional', isOrgPost = false) {
   const toneDesc = getToneDesc(tone);
+  const voiceRule = isOrgPost
+    ? `\n- Write from an ORGANIZATION perspective (use "we", "our company", "our team")\n- Focus on industry insights, data, trends, and company achievements\n- Do NOT include personal stories, personal anecdotes, or first-person singular experiences\n- All content must be factual and professional`
+    : '';
+
   const prompt = `You are a LinkedIn content creator. For the topic "${topic}", generate exactly 3 unique post ideas.
 
 Each idea should include:
@@ -150,6 +162,7 @@ Each idea should include:
 - A brief description of what the post will cover (2-3 sentences)
 
 The tone should be ${toneDesc}.
+${voiceRule}
 ${NO_TEMPLATE_RULE}
 
 Return ONLY a JSON array of 3 objects with "hook" and "description" keys, no markdown formatting, no code blocks. Example:
@@ -157,7 +170,7 @@ Return ONLY a JSON array of 3 objects with "hook" and "description" keys, no mar
 
   try {
     const text = await callWithRetry(prompt);
-    const cleaned = text.replace(/```(?:json)?\n?/g, '').trim();
+    const cleaned = text.replace(/\`\`\`(?:json)?\n?/g, '').trim();
     const ideas = JSON.parse(cleaned);
 
     if (!Array.isArray(ideas) || ideas.length === 0) {
@@ -175,8 +188,18 @@ Return ONLY a JSON array of 3 objects with "hook" and "description" keys, no mar
 /**
  * Generate a full LinkedIn post for a selected idea
  */
-async function generatePost(idea, tone = 'professional') {
+async function generatePost(idea, tone = 'professional', isOrgPost = false) {
   const toneDesc = getToneDesc(tone);
+
+  const personalRules = `- Include a personal insight or lesson learned
+- Write in first person singular ("I", "my")`;
+
+  const orgRules = `- Write from an ORGANIZATION perspective — use "we", "our team", "our company" (NEVER "I" or "my")
+- Base all claims on real industry facts, data, statistics, and trends
+- NEVER fabricate personal stories, personal anecdotes, or fictional experiences
+- Focus on company insights, industry analysis, research findings, and thought leadership
+- You may reference company achievements, team efforts, or industry milestones`;
+
   const prompt = `You are an expert LinkedIn content writer. Create a full LinkedIn post based on this idea:
 
 Hook: ${idea.hook}
@@ -185,7 +208,7 @@ Description: ${idea.description}
 Requirements:
 - Start with a powerful, scroll-stopping first line (the hook)
 - Use short paragraphs (1-3 sentences each) for readability
-- Include a personal insight or lesson learned
+${isOrgPost ? orgRules : personalRules}
 - End with a question or call-to-action to drive engagement
 - Add 3-5 relevant hashtags at the end
 - Total length: 150-300 words (optimal for LinkedIn engagement)
@@ -210,8 +233,12 @@ Return ONLY the post text, nothing else. No explanations, no labels.`;
 /**
  * Revise a post based on user feedback
  */
-async function revisePost(currentPost, feedback, tone = 'professional') {
+async function revisePost(currentPost, feedback, tone = 'professional', isOrgPost = false) {
   const toneDesc = getToneDesc(tone);
+  const voiceRule = isOrgPost
+    ? `\n- This is an ORGANIZATION post — use "we"/"our", NEVER "I"/"my"\n- Do NOT add personal stories or fictional experiences\n- Keep all content fact-based and professional`
+    : '';
+
   const prompt = `You are an expert LinkedIn content writer. Revise the following LinkedIn post based on the user's feedback.
 
 Current Post:
@@ -226,7 +253,7 @@ Requirements:
 - Maintain the same general structure and tone unless asked to change
 - Keep length between 150-300 words
 - Keep hashtags relevant
-- Keep the tone ${toneDesc}
+- Keep the tone ${toneDesc}${voiceRule}
 - Do NOT use markdown formatting — plain text only
 ${NO_TEMPLATE_RULE}
 

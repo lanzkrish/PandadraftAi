@@ -5,6 +5,7 @@ const db = require('../db');
 const { PostWorkflow } = require('../workflow/postWorkflow');
 
 const workflows = new Map();
+const onboardingSessions = new Map(); // chatId -> { step, name, profession, domain, keywords }
 
 function getWorkflow(user, bot) {
   const chatId = user.telegram_chat_id;
@@ -77,7 +78,9 @@ function createTelegramBot(app) {
     const user = await db.getUserByChatId(chatId);
 
     if (!user) {
-      sendTo(chatId, `👋 Welcome! You're not registered yet.\n\nAsk the admin to add you. Your Chat ID: \`${chatId}\``);
+      // Start onboarding flow for new users
+      onboardingSessions.set(String(chatId), { step: 'name', name: null, profession: null, domain: null, keywords: [] });
+      sendTo(chatId, `👋 *Welcome to AutoDraft AI!*\n\nLet's get you set up. First, *what is your name?*`);
       return;
     }
     if (user.status !== 'active') {
@@ -93,7 +96,7 @@ function createTelegramBot(app) {
       `👋 *Welcome, ${user.name || 'there'}!*\n\n` +
       `LinkedIn: ${linkedIn}\n\n` +
       `🚀 /generate — Create a post\n📊 /status — Status\n🔗 /linkedin — Connect LinkedIn\n` +
-      `👤 /myaccount — Account\n⚙️ /settings — Preferences\n📜 /history — Posts\n❌ /cancel — Cancel\nℹ️ /help — Help`
+      `👤 /myaccount — Account\n⚙️ /settings — Preferences\n🏷️ /keywords — Keywords\n📜 /history — Posts\n❌ /cancel — Cancel\nℹ️ /help — Help`
     );
   });
 
@@ -105,9 +108,11 @@ function createTelegramBot(app) {
 
     let help =
       `📖 *AutoDraft AI Help*\n\n` +
-      `/generate — Start workflow\n/status — Current state\n/linkedin — Connect LinkedIn\n` +
-      `/myaccount — Account info\n/settings — Preferences\n/history — Post history\n` +
-      `/cancel — Cancel\n/approve — Approve post`;
+      `*Content:*\n/generate — Start workflow\n/status — Current state\n/approve — Approve post\n/cancel — Cancel\n\n` +
+      `*LinkedIn:*\n/linkedin — Connect LinkedIn\n\n` +
+      `*Account:*\n/myaccount — Account info\n/settings — Preferences\n/history — Post history\n\n` +
+      `*Settings:*\n/set\\_orgid \`<id>\` — Set LinkedIn Org ID (post as company)\n/remove\\_orgid — Remove Org ID (post as personal)\n\n` +
+      `*Keywords:*\n/keywords — View keywords\n/add\\_keyword \`<keyword>\` — Add keyword\n/delete\\_keyword \`<keyword>\` — Remove keyword\n/reset\\_keywords — Clear all keywords`;
 
     if (isAdmin(msg.chat.id)) {
       help += `\n\n*Admin:*\n/admin\\_add \`<chatId>\` \`<name>\`\n/admin\\_list\n/admin\\_pause \`<chatId>\`\n/admin\\_activate \`<chatId>\`\n/admin\\_remove \`<chatId>\``;
@@ -164,10 +169,11 @@ function createTelegramBot(app) {
     if (!user) return;
     const stats = await db.getPostStats(user._id);
     const li = await db.isLinkedInTokenValid(user._id) ? '✅' : '❌';
+    const kws = user.keywords && user.keywords.length > 0 ? user.keywords.join(', ') : 'None';
     sendTo(msg.chat.id,
-      `👤 *Account*\n\n*Name:* ${user.name || '—'}\n*Status:* ${user.status}\n*LinkedIn:* ${li}\n` +
+      `👤 *Account*\n\n*Name:* ${user.name || '—'}\n*Profession:* ${user.profession || '—'}\n*Domain:* ${user.domain || '—'}\n*Status:* ${user.status}\n*LinkedIn:* ${li}\n` +
       `*Org ID:* ${user.linkedin_org_id || 'Personal profile'}\n*Tone:* ${user.content_tone}\n` +
-      `*Categories:* ${user.content_categories || 'AI decides'}\n*Schedule:* ${user.cron_schedule} (${user.timezone})\n\n` +
+      `*Keywords:* ${kws}\n*Schedule:* ${user.cron_schedule} (${user.timezone})\n\n` +
       `📊 ${stats.posted || 0} posted, ${stats.total || 0} total`
     );
   });
@@ -178,8 +184,10 @@ function createTelegramBot(app) {
     const user = await db.getUserByChatId(msg.chat.id);
     if (!user) return;
     sendTo(msg.chat.id,
-      `⚙️ *Settings:*\n\n/set\\_tone \`<tone>\` — professional, casual, thought-leadership, storytelling\n` +
-      `/set\\_categories \`<cat1,cat2>\`\n/set\\_schedule \`<cron>\`\n/set\\_timezone \`<tz>\`\n/set\\_orgid \`<id>\``
+      `⚙️ *Settings:*\n\n` +
+      `*Content:*\n/set\\_tone \`<tone>\` — professional, casual, thought-leadership, storytelling\n` +
+      `/set\\_schedule \`<cron>\`\n/set\\_timezone \`<tz>\`\n/set\\_orgid \`<id>\` — Post as company page\n/remove\\_orgid — Remove Org ID (post as personal)\n\n` +
+      `*Keywords:*\n/keywords — View your keywords\n/add\\_keyword \`<keyword>\` — Add a keyword\n/delete\\_keyword \`<keyword>\` — Remove a keyword\n/reset\\_keywords — Reset to default keywords`
     );
   });
 
@@ -194,12 +202,7 @@ function createTelegramBot(app) {
     sendTo(msg.chat.id, `✅ Tone: *${tone}*`);
   });
 
-  bot.onText(/\/set_categories (.+)/, async (msg, match) => {
-    const user = await db.getUserByChatId(msg.chat.id);
-    if (!user) return;
-    await db.updateUser(user._id, { content_categories: match[1].trim() });
-    sendTo(msg.chat.id, `✅ Categories: *${match[1].trim()}*`);
-  });
+
 
   bot.onText(/\/set_schedule (.+)/, async (msg, match) => {
     const user = await db.getUserByChatId(msg.chat.id);
@@ -221,6 +224,56 @@ function createTelegramBot(app) {
     const orgId = (match[1] || '').trim();
     await db.updateUser(user._id, { linkedin_org_id: orgId });
     sendTo(msg.chat.id, orgId ? `✅ Org ID: *${orgId}* (company page)` : '✅ Org ID cleared (personal profile)');
+  });
+
+  bot.onText(/\/remove_orgid/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    await db.updateUser(user._id, { linkedin_org_id: '' });
+    sendTo(msg.chat.id, '✅ Org ID removed. Posts will now go to your *personal profile*.');
+  });
+
+  // ── /keywords, /add_keyword, /delete_keyword, /reset_keywords ──
+
+  bot.onText(/\/keywords$/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const keywords = await db.getKeywords(user._id);
+    if (keywords.length === 0) {
+      sendTo(msg.chat.id, '🏷️ *No keywords yet.*\n\nUse /add\\_keyword `<keyword>` to add one.');
+    } else {
+      sendTo(msg.chat.id, `🏷️ *Your Keywords (${keywords.length}):*\n\n${keywords.map((k, i) => `${i + 1}. ${k}`).join('\n')}\n\n/add\\_keyword — Add\n/delete\\_keyword — Remove\n/reset\\_keywords — Clear all`);
+    }
+  });
+
+  bot.onText(/\/add_keyword (.+)/, async (msg, match) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const keyword = match[1].trim();
+    if (!keyword) { sendTo(msg.chat.id, '❌ Usage: /add\\_keyword `<keyword>`'); return; }
+    await db.addKeyword(user._id, keyword);
+    sendTo(msg.chat.id, `✅ Keyword added: *${keyword.toLowerCase()}*`);
+  });
+
+  bot.onText(/\/delete_keyword (.+)/, async (msg, match) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const keyword = match[1].trim();
+    if (!keyword) { sendTo(msg.chat.id, '❌ Usage: /delete\\_keyword `<keyword>`'); return; }
+    await db.deleteKeyword(user._id, keyword);
+    sendTo(msg.chat.id, `✅ Keyword removed: *${keyword.toLowerCase()}*`);
+  });
+
+  bot.onText(/\/reset_keywords/, async (msg) => {
+    const user = await db.getUserByChatId(msg.chat.id);
+    if (!user) return;
+    const defaults = config.defaults.categories.map(k => k.trim().toLowerCase()).filter(Boolean);
+    await db.resetKeywords(user._id, defaults);
+    if (defaults.length > 0) {
+      sendTo(msg.chat.id, `🔄 Keywords reset to defaults:\\n\\n${defaults.map((k, i) => `${i + 1}. ${k}`).join('\\n')}`);
+    } else {
+      sendTo(msg.chat.id, '🔄 Keywords reset. No default keywords configured.');
+    }
   });
 
   // ── /history ─────────────────────────────────────────────
@@ -343,10 +396,86 @@ function createTelegramBot(app) {
   // ── Free-text (feedback) ─────────────────────────────────
 
   bot.on('message', async (msg) => {
-    if (msg.text && msg.text.startsWith('/')) return;
+    if (!msg.text) return;
+    const chatId = String(msg.chat.id);
+
+    // ── Onboarding flow for new users ──
+    if (onboardingSessions.has(chatId)) {
+      // Allow /skip during keywords step and /cancel at any step
+      if (msg.text === '/cancel') {
+        onboardingSessions.delete(chatId);
+        sendTo(chatId, '❌ Onboarding cancelled. Send /start to try again.');
+        return;
+      }
+      if (msg.text.startsWith('/') && msg.text !== '/skip') return;
+
+      const session = onboardingSessions.get(chatId);
+
+      switch (session.step) {
+        case 'name':
+          session.name = msg.text.trim();
+          session.step = 'profession';
+          sendTo(chatId, `Nice to meet you, *${session.name}*! 🎉\n\n*What is your current profession?*\n\ne.g. Software Engineer, Marketing Manager, Founder`);
+          break;
+
+        case 'profession':
+          session.profession = msg.text.trim();
+          session.step = 'domain';
+          sendTo(chatId, `Great! 💼\n\n*What domain do you want to post about?*\n\ne.g. AI/ML, FinTech, SaaS, Marketing, Healthcare`);
+          break;
+
+        case 'domain':
+          session.domain = msg.text.trim();
+          session.step = 'keywords';
+          sendTo(chatId, `Almost done! 🏷️\n\n*Enter keywords you want to focus on* (comma-separated).\n\ne.g. artificial intelligence, startup, remote work\n\nOr send /skip to skip this step.`);
+          break;
+
+        case 'keywords': {
+          let keywords = [];
+          if (msg.text !== '/skip') {
+            keywords = msg.text.split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+          }
+
+          // Create the user
+          const newUser = await db.createUser({
+            chatId,
+            username: msg.from?.username || null,
+            name: session.name,
+            isAdmin: false,
+          });
+
+          // Update profession, domain, and keywords
+          await db.updateUser(newUser._id, {
+            profession: session.profession,
+            domain: session.domain,
+            content_categories: session.domain, // Use domain as default category
+          });
+
+          // Add keywords
+          for (const kw of keywords.slice(0, 20)) {
+            await db.addKeyword(newUser._id, kw);
+          }
+
+          onboardingSessions.delete(chatId);
+
+          const kwText = keywords.length > 0 ? keywords.join(', ') : 'None (add later with /add\\_keyword)';
+          sendTo(chatId,
+            `🎉 *You're all set, ${session.name}!*\n\n` +
+            `👤 *Name:* ${session.name}\n💼 *Profession:* ${session.profession}\n🌐 *Domain:* ${session.domain}\n🏷️ *Keywords:* ${kwText}\n\n` +
+            `*Next step:* Connect your LinkedIn account 👇\n[🔗 Connect LinkedIn](${config.appUrl}/auth/linkedin?user=${newUser._id})\n\n` +
+            `Use /help to see all commands.`
+          );
+          logger.info(`New user onboarded: ${session.name} (${chatId})`);
+          break;
+        }
+      }
+      return;
+    }
+
+    // ── Regular free-text (workflow feedback / keyword input) ──
+    if (msg.text.startsWith('/')) return;
     const user = await db.getUserByChatId(msg.chat.id);
     if (!user || user.status !== 'active') return;
-    const chatId = String(user.telegram_chat_id);
     if (workflows.has(chatId) && msg.text) await workflows.get(chatId).handleTextInput(msg.text);
   });
 
