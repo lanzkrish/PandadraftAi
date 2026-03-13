@@ -1,12 +1,9 @@
-const fs = require('fs');
 const path = require('path');
 
-// Load .env first, then .env.local overrides (if exists)
+// Load .env always. Load .env.local ONLY when explicitly using dev:local script.
+// The dev:local script uses --env-file=.env.local which sets those vars directly;
+// dotenv is only needed as a fallback for any vars not already in the environment.
 require('dotenv').config();
-const envLocalPath = path.resolve(process.cwd(), '.env.local');
-if (fs.existsSync(envLocalPath)) {
-  require('dotenv').config({ path: envLocalPath, override: true });
-}
 
 const isProduction = process.env.NODE_ENV === 'production';
 
