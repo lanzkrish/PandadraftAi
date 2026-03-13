@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
   cron_schedule: { type: String, default: '0 9 * * *' },
   timezone: { type: String, default: 'Asia/Kolkata' },
   is_admin: { type: Boolean, default: false },
+  is_dev_user: { type: Boolean, default: false },  // Dev/test users routed to dev server
 }, { timestamps: true });
 
 const linkedinTokenSchema = new mongoose.Schema({
@@ -131,6 +132,14 @@ async function getKeywords(userId) {
   return user?.keywords || [];
 }
 
+async function setDevUser(userId, isDev) {
+  await User.updateOne({ _id: userId }, { $set: { is_dev_user: isDev } });
+}
+
+async function getAllDevUsers() {
+  return User.find({ is_dev_user: true }).lean();
+}
+
 // ── LinkedIn Token Operations ────────────────────────────────
 
 async function saveLinkedInTokens(userId, tokens) {
@@ -215,6 +224,8 @@ module.exports = {
   deleteKeyword,
   resetKeywords,
   getKeywords,
+  setDevUser,
+  getAllDevUsers,
   // LinkedIn tokens
   saveLinkedInTokens,
   getLinkedInTokens,

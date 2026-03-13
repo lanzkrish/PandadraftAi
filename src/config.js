@@ -1,4 +1,12 @@
+const fs = require('fs');
+const path = require('path');
+
+// Load .env first, then .env.local overrides (if exists)
 require('dotenv').config();
+const envLocalPath = path.resolve(process.cwd(), '.env.local');
+if (fs.existsSync(envLocalPath)) {
+  require('dotenv').config({ path: envLocalPath, override: true });
+}
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -36,6 +44,12 @@ const config = {
   // Server
   server: {
     port: parseInt(process.env.PORT, 10) || 3000,
+  },
+
+  // Dev server routing
+  devServer: {
+    url: process.env.DEV_SERVER_URL || '',               // Production uses this to proxy dev users
+    isDevServer: process.env.IS_DEV_SERVER === 'true',   // True when this IS the dev server
   },
 
   // Default content preferences (per-user overrides stored in DB)

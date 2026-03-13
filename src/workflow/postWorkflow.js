@@ -33,6 +33,11 @@ class PostWorkflow {
     this.keywords = user.keywords || [];
     this.tone = user.content_tone || 'professional';
     this.isOrgPost = Boolean(user.linkedin_org_id);
+    this.userContext = {
+      name: user.name || null,
+      profession: user.profession || null,
+      domain: user.domain || null,
+    };
   }
 
   getState() { return this.state; }
@@ -171,7 +176,7 @@ class PostWorkflow {
       this.data.selectedIdea = this.data.ideas[ideaIndex];
       await this.sendMessage('✅ Idea selected!\n\n🤖 Crafting your post...');
 
-      this.data.currentPost = await ai.generatePost(this.data.selectedIdea, this.tone, this.isOrgPost);
+      this.data.currentPost = await ai.generatePost(this.data.selectedIdea, this.tone, this.isOrgPost, this.userContext);
       this.state = STATE.DRAFT_SENT;
 
       const post = await db.savePostHistory(this.userId, {
@@ -228,7 +233,7 @@ class PostWorkflow {
     if (this.state !== STATE.AWAITING_FEEDBACK) return false;
     try {
       await this.sendMessage('🤖 Revising...');
-      this.data.currentPost = await ai.revisePost(this.data.currentPost, feedback, this.tone, this.isOrgPost);
+      this.data.currentPost = await ai.revisePost(this.data.currentPost, feedback, this.tone, this.isOrgPost, this.userContext);
       this.state = STATE.DRAFT_SENT;
 
       await this.sendMessage(`📄 *Revised post:*\n\n---\n${this.data.currentPost}\n---`);
