@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Autodraft - Content Calendar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf9f8",
+                        "inverse-primary": "#c6c6c7",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#00458f",
+                        "tertiary-fixed-dim": "#abc7ff",
+                        "on-secondary-container": "#616365",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e2e2e4",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#313030",
+                        "primary-fixed": "#e2e2e2",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "outline": "#747878",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-surface": "#1c1b1b",
+                        "surface-container-low": "#f6f3f2",
+                        "primary-container": "#ffffff",
+                        "tertiary-container": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "secondary-fixed-dim": "#c6c6c8",
+                        "secondary-container": "#dfdfe1",
+                        "tertiary": "#005cbb",
+                        "outline-variant": "#c4c7c8",
+                        "surface-tint": "#5d5f5f",
+                        "surface-variant": "#e5e2e1",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-primary-container": "#747676",
+                        "error": "#ba1a1a",
+                        "secondary": "#5d5e60",
+                        "on-secondary-fixed-variant": "#454749",
+                        "surface-container": "#f0edec",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "primary": "#5d5f5f",
+                        "surface": "#fcf9f8",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-primary-fixed-variant": "#454747",
+                        "tertiary-fixed": "#d7e2ff",
+                        "on-tertiary-fixed": "#001b3f",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1c1b1b",
+                        "on-tertiary-container": "#0973e5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#444748"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "16px",
+                        "scale": "{'xs': '4px', 'sm': '8px', 'md': '16px', 'lg': '24px', 'xl': '48px', 'xxl': '80px'}",
+                        "base": "8px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "display-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "title-lg": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-md": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "title-lg": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["56px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F5F5F7; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        /* Hide scrollbar for clean look but allow scrolling */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+</head>
+<body class="font-body-lg text-body-lg text-on-surface bg-background flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col p-4 gap-2 bg-surface-container-low border-r border-outline-variant/20 ease-out-cubic transition-all z-40 hidden md:flex">
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 p-3 bg-white text-primary shadow-sm rounded-lg font-bold hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+<span class="font-label-md text-label-md">Calendar</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label-md text-label-md">Generator</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Posts</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<div class="mt-auto">
+<button class="w-full py-3 bg-[#0071E3] text-white font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity">
+                Upgrade to Pro
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-64 h-screen pt-16">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-gutter h-16 bg-surface/70 backdrop-blur-xl border-b border-outline-variant/30">
+<div class="flex items-center gap-4">
+<span class="font-display-md text-display-md font-bold text-tertiary">Autodraft</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="p-2 hover:text-primary transition-colors duration-200 scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="p-2 hover:text-primary transition-colors duration-200 scale-95 active:scale-90">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<img alt="User profile" class="w-8 h-8 rounded-full border border-outline-variant/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtsEzKO_ps4rdqW6puOYYICePcZz6qCovUh9btRyZMrjmBTsTN7XJP4FvjHLa7TfeV3t5TPgSE41EvnTeNtP9eD8PCNNc1_hhXkg_PdNIFBH11Pqe34ybv3TU5D87iOjj8Besb5ht1fp857Hwt7xuC-MOdAJOVKeqmX0FluAxZvWOhCRwwztsIrrkqI9jpnw8l4nApL0ItMfQr2z9aaX6oaO0j9ZdqvRsMwjzS-I1i8iRt5TlHmAZxFAzRasx0aWge8U0uPzp_rzY"/>
+</div>
+</header>
+<!-- Calendar Header -->
+<div class="flex justify-between items-center px-8 py-6 border-b border-outline-variant/20 bg-background flex-shrink-0">
+<div class="flex items-center gap-4">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">October 2024</h1>
+<div class="flex items-center gap-2 bg-surface-container-low rounded-lg p-1 border border-outline-variant/20">
+<button class="p-1.5 hover:bg-white rounded hover:shadow-sm transition-all"><span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span></button>
+<span class="font-label-md text-label-md px-2 text-on-surface-variant">Today</span>
+<button class="p-1.5 hover:bg-white rounded hover:shadow-sm transition-all"><span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="bg-surface-container-low p-1 rounded-lg flex border border-outline-variant/20">
+<button class="px-4 py-1.5 bg-white shadow-sm rounded-md font-label-md text-label-md text-primary">Month</button>
+<button class="px-4 py-1.5 rounded-md font-label-md text-label-md text-on-surface-variant hover:text-primary">Week</button>
+</div>
+<button class="bg-[#0071E3] text-white px-4 py-2 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                    New Post
+                </button>
+</div>
+</div>
+<!-- Two Column Layout: Calendar & Details Panel -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Calendar Grid -->
+<div class="flex-1 flex flex-col p-6 overflow-y-auto bg-surface-container-low/30">
+<!-- Days of Week -->
+<div class="grid grid-cols-7 gap-4 mb-4">
+<div class="text-center font-label-md text-label-md text-on-surface-variant">Mon</div>
+<div class="text-center font-label-md text-label-md text-on-surface-variant">Tue</div>
+<div class="text-center font-label-md text-label-md text-on-surface-variant">Wed</div>
+<div class="text-center font-label-md text-label-md text-on-surface-variant">Thu</div>
+<div class="text-center font-label-md text-label-md text-on-surface-variant">Fri</div>
+<div class="text-center font-label-md text-label-md text-on-surface-variant">Sat</div>
+<div class="text-center font-label-md text-label-md text-on-surface-variant">Sun</div>
+</div>
+<!-- Calendar Cells (Simplified Month View) -->
+<div class="grid grid-cols-7 gap-4 flex-1 auto-rows-fr">
+<!-- Blank days for start of month -->
+<div class="min-h-[120px] rounded-xl border border-outline-variant/10 bg-surface-container-lowest/50"></div>
+<div class="min-h-[120px] rounded-xl border border-outline-variant/10 bg-surface-container-lowest/50"></div>
+<!-- Day 1 -->
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group">
+<div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">1</div>
+<div class="bg-secondary-fixed/50 border border-secondary-fixed text-on-surface-variant text-[10px] p-1.5 rounded mb-1 truncate cursor-grab font-medium">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary mr-1"></span>Draft: Q4 Strategy
+                        </div>
+</div>
+<!-- Day 2 -->
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group">
+<div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">2</div>
+</div>
+<!-- Day 3 -->
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group">
+<div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">3</div>
+<div class="bg-tertiary-fixed/50 border border-tertiary-fixed text-tertiary text-[10px] p-1.5 rounded mb-1 truncate cursor-grab font-medium">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary mr-1"></span>Scheduled: Product Update
+                        </div>
+</div>
+<!-- Day 4 -->
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group">
+<div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">4</div>
+</div>
+<!-- Day 5 -->
+<div class="min-h-[120px] rounded-xl border border-[#0071E3]/40 bg-white p-2 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-colors relative">
+<div class="absolute -top-1 -right-1 w-2 h-2 bg-[#0071E3] rounded-full"></div>
+<div class="text-right font-label-md text-label-md text-[#0071E3] font-bold mb-2">5</div>
+<div class="bg-error-container/50 border border-error-container text-error text-[10px] p-1.5 rounded mb-1 truncate cursor-grab font-medium">
+<span class="inline-block w-2 h-2 rounded-full bg-error mr-1"></span>Failed: API Down
+                        </div>
+<div class="bg-surface-container-high border border-outline-variant/30 text-on-surface text-[10px] p-1.5 rounded mb-1 truncate cursor-grab font-medium ring-1 ring-[#0071E3]/50">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>Published: AI Insights
+                        </div>
+</div>
+<!-- More generic days to fill grid -->
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group"><div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">6</div></div>
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group"><div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">7</div></div>
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group"><div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">8</div></div>
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group"><div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">9</div></div>
+<div class="min-h-[120px] rounded-xl border border-outline-variant/20 bg-white p-2 hover:border-[#0071E3]/30 transition-colors group">
+<div class="text-right font-label-md text-label-md text-on-surface-variant mb-2">10</div>
+<div class="bg-tertiary-fixed/50 border border-tertiary-fixed text-tertiary text-[10px] p-1.5 rounded mb-1 truncate cursor-grab font-medium">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary mr-1"></span>Scheduled: Podcast Ep 12
+                        </div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Post Details -->
+<div class="w-80 bg-white border-l border-outline-variant/20 flex flex-col flex-shrink-0">
+<div class="p-6 border-b border-outline-variant/10 flex justify-between items-center">
+<h2 class="font-title-lg text-title-lg text-on-surface">Post Details</h2>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]" data-icon="close">close</span></button>
+</div>
+<div class="p-6 flex-1 overflow-y-auto">
+<div class="flex items-center gap-2 mb-4">
+<span class="px-2 py-1 bg-surface-container-high rounded-md text-[10px] font-label-md font-bold text-on-surface uppercase tracking-wider text-emerald-600 bg-emerald-50">Published</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant text-xs">Oct 5, 2024 • 09:00 AM</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">AI Insights: The Future of Automation</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 leading-relaxed">
+                        Discover how generative AI is reshaping the landscape of modern SaaS platforms. In this week's breakdown, we explore...
+                    </p>
+<div class="rounded-xl overflow-hidden mb-6 border border-outline-variant/20">
+<img alt="A sleek, futuristic visualization of an artificial intelligence network. Glowing geometric nodes and connecting lines form a complex, organic shape against a clean, minimalist off-white background. The lighting is bright and high-key, creating a modern, high-end tech aesthetic. Subtle accents of deep blue and pristine white emphasize the premium feel." class="w-full h-40 object-cover" data-alt="A sleek, futuristic visualization of an artificial intelligence network. Glowing geometric nodes and connecting lines form a complex, organic shape against a clean, minimalist off-white background. The lighting is bright and high-key, creating a modern, high-end tech aesthetic. Subtle accents of deep blue and pristine white emphasize the premium feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIgco9kzrMBSbu6868zfWusgB3g6NQ-1ggeVpS112oRwCEPtoN4gGKzrlc1liBJ11de_-lloclFITDke8PxcthbOzrPvpep4KejFG0DgfWh1hX-YviznksIrxnOMdX6jWoNAP8OpEIQxyyY9NXdMkXYhHYrGI-WWDkeOHVmNsZKdC0RnfId_7VoFqX0cR_mkz9FuJL8GXhdVhqKWoK3nw4cDUnFSX0Z_qedlKwQvKWXEM45oSrTic39y7-loNsUfUMqXnsCOZ8c_s"/>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Platforms</span>
+<div class="flex gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[12px]">𝕏</span>
+<span class="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[12px]">in</span>
+</div>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Author</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Sarah Jenkins</span>
+</div>
+</div>
+</div>
+<div class="p-6 border-t border-outline-variant/10 bg-surface-container-lowest space-y-3">
+<button class="w-full py-2 bg-white border border-outline-variant/40 rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span> Edit Post
+                    </button>
+<div class="flex gap-3">
+<button class="flex-1 py-2 bg-white border border-outline-variant/40 rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors">
+                            Duplicate
+                        </button>
+<button class="flex-1 py-2 bg-white border border-outline-variant/40 rounded-lg font-label-md text-label-md text-error hover:bg-error-container/20 transition-colors">
+                            Delete
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

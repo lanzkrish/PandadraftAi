@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Autodraft Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf9f8",
+                        "inverse-primary": "#c6c6c7",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#00458f",
+                        "tertiary-fixed-dim": "#abc7ff",
+                        "on-secondary-container": "#616365",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e2e2e4",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#313030",
+                        "primary-fixed": "#e2e2e2",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "outline": "#747878",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-surface": "#1c1b1b",
+                        "surface-container-low": "#f6f3f2",
+                        "primary-container": "#ffffff",
+                        "tertiary-container": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "secondary-fixed-dim": "#c6c6c8",
+                        "secondary-container": "#dfdfe1",
+                        "tertiary": "#005cbb",
+                        "outline-variant": "#c4c7c8",
+                        "surface-tint": "#5d5f5f",
+                        "surface-variant": "#e5e2e1",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-primary-container": "#747676",
+                        "error": "#ba1a1a",
+                        "secondary": "#5d5e60",
+                        "on-secondary-fixed-variant": "#454749",
+                        "surface-container": "#f0edec",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "primary": "#5d5f5f",
+                        "surface": "#fcf9f8",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-primary-fixed-variant": "#454747",
+                        "tertiary-fixed": "#d7e2ff",
+                        "on-tertiary-fixed": "#001b3f",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1c1b1b",
+                        "on-tertiary-container": "#0973e5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#444748",
+                        "accent-blue": "#0071E3" // Apple Blue Accent
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "16px",
+                        "scale": "{'xs': '4px', 'sm': '8px', 'md': '16px', 'lg': '24px', 'xl': '48px', 'xxl': '80px'}",
+                        "base": "8px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "display-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "title-lg": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-md": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "display-lg": ["56px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 229, 231, 0.8);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+            border-color: rgba(0, 113, 227, 0.2);
+        }
+        .input-glow:focus {
+            outline: none;
+            border-color: #0071E3;
+            box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.1);
+        }
+        
+        /* Hide all steps by default */
+        .step-content { display: none; }
+        /* Show active step */
+        .step-content.active { display: block; animation: fadeIn 0.4s ease-out forwards; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .selectable-card.selected {
+            border-color: #0071E3;
+            background-color: rgba(0, 113, 227, 0.03);
+        }
+        .selectable-card.selected .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-lg">
+<!-- Top AppBar (Brand Identity) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 bg-surface-bright/80 backdrop-blur-xl border-b border-outline-variant/20">
+<div class="font-display-md text-title-lg font-bold text-on-surface">Autodraft</div>
+<!-- Intentionally leaving out nav items as this is a transactional onboarding flow -->
+<div class="text-body-sm text-on-surface-variant">Setup Process</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center pt-24 pb-20 px-gutter w-full">
+<div class="w-full max-w-2xl">
+<!-- Progress Indicator -->
+<div class="mb-12">
+<div class="flex justify-between items-center mb-4">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" id="step-label">Step 1 of 5</span>
+<span class="font-label-md text-label-md text-on-surface-variant" id="step-title-display">Professional Profile</span>
+</div>
+<div class="h-1 bg-surface-container-high rounded-full overflow-hidden flex gap-1">
+<div class="flex-1 bg-accent-blue rounded-full transition-all duration-300 step-bar" data-step="1"></div>
+<div class="flex-1 bg-surface-container-high rounded-full transition-all duration-300 step-bar" data-step="2"></div>
+<div class="flex-1 bg-surface-container-high rounded-full transition-all duration-300 step-bar" data-step="3"></div>
+<div class="flex-1 bg-surface-container-high rounded-full transition-all duration-300 step-bar" data-step="4"></div>
+<div class="flex-1 bg-surface-container-high rounded-full transition-all duration-300 step-bar" data-step="5"></div>
+</div>
+</div>
+<!-- Form Container -->
+<div class="glass-card rounded-xl p-8 md:p-12">
+<!-- Step 1: Professional Profile -->
+<div class="step-content active" id="step-1">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg mb-2">Let's build your profile.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Tell us a bit about who you are to tailor the Autodraft experience.</p>
+</div>
+<div class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface">Full Name</label>
+<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg input-glow transition-all" placeholder="Jane Doe" type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface">Role</label>
+<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg input-glow transition-all" placeholder="e.g. Founder, Engineer" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface">Company</label>
+<input class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg input-glow transition-all" placeholder="Your Company Ltd." type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface">Industry</label>
+<select class="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg input-glow transition-all appearance-none">
+<option disabled="" selected="" value="">Select an industry...</option>
+<option>Technology / Software</option>
+<option>Marketing / Agency</option>
+<option>Consulting</option>
+<option>Finance</option>
+<option>Other</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Step 2: Target Audience -->
+<div class="step-content" id="step-2">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg mb-2">Who are you writing for?</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Select the primary audiences you want to reach. (Select up to 2)</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Cards -->
+<div class="selectable-card border border-outline-variant rounded-lg p-5 cursor-pointer relative overflow-hidden bg-surface-bright group" onclick="toggleSelection(this)">
+<div class="absolute top-4 right-4 text-accent-blue opacity-0 transform scale-50 transition-all duration-200 check-icon">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="material-symbols-outlined mb-3 text-secondary" data-icon="lightbulb">lightbulb</span>
+<h3 class="font-title-lg text-title-lg mb-1">Founders</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Entrepreneurs and business owners.</p>
+</div>
+<div class="selectable-card border border-outline-variant rounded-lg p-5 cursor-pointer relative overflow-hidden bg-surface-bright group" onclick="toggleSelection(this)">
+<div class="absolute top-4 right-4 text-accent-blue opacity-0 transform scale-50 transition-all duration-200 check-icon">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="material-symbols-outlined mb-3 text-secondary" data-icon="code">code</span>
+<h3 class="font-title-lg text-title-lg mb-1">Developers</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Engineers and technical talent.</p>
+</div>
+<div class="selectable-card border border-outline-variant rounded-lg p-5 cursor-pointer relative overflow-hidden bg-surface-bright group" onclick="toggleSelection(this)">
+<div class="absolute top-4 right-4 text-accent-blue opacity-0 transform scale-50 transition-all duration-200 check-icon">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="material-symbols-outlined mb-3 text-secondary" data-icon="campaign">campaign</span>
+<h3 class="font-title-lg text-title-lg mb-1">Marketers</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Growth, content, and brand specialists.</p>
+</div>
+<div class="selectable-card border border-outline-variant rounded-lg p-5 cursor-pointer relative overflow-hidden bg-surface-bright group" onclick="toggleSelection(this)">
+<div class="absolute top-4 right-4 text-accent-blue opacity-0 transform scale-50 transition-all duration-200 check-icon">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="material-symbols-outlined mb-3 text-secondary" data-icon="handshake">handshake</span>
+<h3 class="font-title-lg text-title-lg mb-1">Recruiters</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Talent acquisition and HR professionals.</p>
+</div>
+</div>
+</div>
+<!-- Step 3: Goals -->
+<div class="step-content" id="step-3">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg mb-2">What is your primary goal?</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Choose the main objective for your content generation.</p>
+</div>
+<div class="space-y-4">
+<label class="flex items-center p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors bg-surface-bright">
+<input class="w-5 h-5 text-accent-blue border-outline-variant focus:ring-accent-blue" name="goal" type="radio"/>
+<div class="ml-4 flex flex-col">
+<span class="font-title-lg text-title-lg">Build Authority</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Establish thought leadership in your niche.</span>
+</div>
+</label>
+<label class="flex items-center p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors bg-surface-bright">
+<input class="w-5 h-5 text-accent-blue border-outline-variant focus:ring-accent-blue" name="goal" type="radio"/>
+<div class="ml-4 flex flex-col">
+<span class="font-title-lg text-title-lg">Generate Leads</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Drive inbound interest for your services or product.</span>
+</div>
+</label>
+<label class="flex items-center p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors bg-surface-bright">
+<input class="w-5 h-5 text-accent-blue border-outline-variant focus:ring-accent-blue" name="goal" type="radio"/>
+<div class="ml-4 flex flex-col">
+<span class="font-title-lg text-title-lg">Grow Audience</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Increase followers and engagement metrics.</span>
+</div>
+</label>
+<label class="flex items-center p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors bg-surface-bright">
+<input class="w-5 h-5 text-accent-blue border-outline-variant focus:ring-accent-blue" name="goal" type="radio"/>
+<div class="ml-4 flex flex-col">
+<span class="font-title-lg text-title-lg">Personal Branding</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Enhance your public professional profile.</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Step 4: Content Pillars -->
+<div class="step-content" id="step-4">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg mb-2">Define your pillars.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Select the topics you want Autodraft to focus on. (Select at least 2)</p>
+</div>
+<div class="flex flex-wrap gap-3">
+<!-- Chips -->
+<button class="px-6 py-3 border border-outline-variant rounded-full font-body-lg text-body-lg hover:border-accent-blue hover:bg-accent-blue/5 transition-colors" onclick="toggleChip(this)">AI &amp; Machine Learning</button>
+<button class="px-6 py-3 border border-outline-variant rounded-full font-body-lg text-body-lg hover:border-accent-blue hover:bg-accent-blue/5 transition-colors" onclick="toggleChip(this)">Startups</button>
+<button class="px-6 py-3 border border-outline-variant rounded-full font-body-lg text-body-lg hover:border-accent-blue hover:bg-accent-blue/5 transition-colors" onclick="toggleChip(this)">SaaS</button>
+<button class="px-6 py-3 border border-outline-variant rounded-full font-body-lg text-body-lg hover:border-accent-blue hover:bg-accent-blue/5 transition-colors" onclick="toggleChip(this)">Marketing Strategy</button>
+<button class="px-6 py-3 border border-outline-variant rounded-full font-body-lg text-body-lg hover:border-accent-blue hover:bg-accent-blue/5 transition-colors" onclick="toggleChip(this)">Productivity</button>
+<button class="px-6 py-3 border border-outline-variant rounded-full font-body-lg text-body-lg hover:border-accent-blue hover:bg-accent-blue/5 transition-colors" onclick="toggleChip(this)">Leadership</button>
+<button class="px-6 py-3 border border-outline-variant rounded-full font-body-lg text-body-lg hover:border-accent-blue hover:bg-accent-blue/5 transition-colors" onclick="toggleChip(this)">CRM Operations</button>
+</div>
+</div>
+<!-- Step 5: Writing Style -->
+<div class="step-content" id="step-5">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg mb-2">Set your tone.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">How should your content sound?</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="selectable-card border border-outline-variant rounded-lg p-5 cursor-pointer bg-surface-bright text-center" onclick="selectSingle(this, 'style')">
+<h3 class="font-title-lg text-title-lg mb-1">Professional</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Clear, objective, and polished.</p>
+</div>
+<div class="selectable-card border border-outline-variant rounded-lg p-5 cursor-pointer bg-surface-bright text-center" onclick="selectSingle(this, 'style')">
+<h3 class="font-title-lg text-title-lg mb-1">Storytelling</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Narrative-driven and engaging.</p>
+</div>
+<div class="selectable-card border border-outline-variant rounded-lg p-5 cursor-pointer bg-surface-bright text-center" onclick="selectSingle(this, 'style')">
+<h3 class="font-title-lg text-title-lg mb-1">Educational</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Instructive and informative.</p>
+</div>
+<div class="selectable-card border border-outline-variant rounded-lg p-5 cursor-pointer bg-surface-bright text-center" onclick="selectSingle(this, 'style')">
+<h3 class="font-title-lg text-title-lg mb-1">Contrarian</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Bold, challenging the status quo.</p>
+</div>
+</div>
+</div>
+<!-- Navigation Buttons -->
+<div class="mt-12 pt-6 border-t border-outline-variant/30 flex justify-between items-center">
+<button class="font-body-lg text-body-lg text-on-surface-variant hover:text-on-surface transition-colors px-4 py-2 opacity-0 pointer-events-none" id="btn-back" onclick="prevStep()">Back</button>
+<button class="bg-accent-blue text-white font-body-lg text-body-lg px-8 py-3 rounded-lg hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md" id="btn-next" onclick="nextStep()">Continue</button>
+</div>
+</div>
+</div>
+</main>
+<script>
+        let currentStep = 1;
+        const totalSteps = 5;
+        const stepTitles = [
+            "Professional Profile",
+            "Target Audience",
+            "Goals",
+            "Content Pillars",
+            "Writing Style"
+        ];
+
+        function updateUI() {
+            // Update contents
+            document.querySelectorAll('.step-content').forEach((el, index) => {
+                if (index + 1 === currentStep) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+
+            // Update Progress Bar
+            document.querySelectorAll('.step-bar').forEach((el, index) => {
+                if (index + 1 <= currentStep) {
+                    el.classList.replace('bg-surface-container-high', 'bg-accent-blue');
+                } else {
+                    el.classList.replace('bg-accent-blue', 'bg-surface-container-high');
+                }
+            });
+
+            // Update Labels
+            document.getElementById('step-label').textContent = `Step ${currentStep} of ${totalSteps}`;
+            document.getElementById('step-title-display').textContent = stepTitles[currentStep - 1];
+
+            // Update Buttons
+            const btnBack = document.getElementById('btn-back');
+            const btnNext = document.getElementById('btn-next');
+
+            if (currentStep === 1) {
+                btnBack.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                btnBack.classList.remove('opacity-0', 'pointer-events-none');
+            }
+
+            if (currentStep === totalSteps) {
+                btnNext.textContent = "Complete Setup";
+            } else {
+                btnNext.textContent = "Continue";
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            } else {
+                // Submit logic
+                alert("Setup Complete! Redirecting to Dashboard...");
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        }
+
+        // Interactivity for Cards
+        function toggleSelection(element) {
+            element.classList.toggle('selected');
+        }
+
+        function toggleChip(element) {
+            element.classList.toggle('bg-accent-blue');
+            element.classList.toggle('text-white');
+            element.classList.toggle('border-accent-blue');
+        }
+
+        function selectSingle(element, group) {
+            // simplistic single select for demo
+            const siblings = element.parentElement.querySelectorAll('.selectable-card');
+            siblings.forEach(sib => sib.classList.remove('selected', 'border-accent-blue', 'bg-accent-blue/5'));
+            element.classList.add('selected', 'border-accent-blue');
+            element.style.backgroundColor = 'rgba(0, 113, 227, 0.03)';
+        }
+
+        // Initialize
+        updateUI();
+    </script>
+</body></html>

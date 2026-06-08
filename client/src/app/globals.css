@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-body-lg text-body-lg min-h-screen antialiased selection:bg-tertiary selection:text-white;
+  }
+}
+
+@layer components {
+  /* Heavy Glassmorphism Utility (Apple Style) */
+  .glass-card {
+    @apply bg-white/60 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] dark:bg-black/60 dark:border-white/10;
+  }
+  
+  .glass-panel {
+    @apply bg-surface/70 backdrop-blur-xl border border-outline-variant/30;
+  }
+
+  .glass-nav {
+    @apply bg-surface/80 backdrop-blur-2xl border-b border-outline-variant/20 sticky top-0 z-50;
+  }
+}
+
+/* Base custom styles from the Stitch design */
+.circular-chart {
+    display: block;
+    margin: 0 auto;
+    max-width: 80%;
+    max-height: 250px;
+}
+.circle-bg {
+    fill: none;
+    stroke: #f6f3f2;
+    stroke-width: 3.8;
+}
+.circle {
+    fill: none;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    animation: progress 1s ease-out forwards;
+}
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}

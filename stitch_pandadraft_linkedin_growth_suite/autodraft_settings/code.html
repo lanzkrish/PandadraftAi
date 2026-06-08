@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Autodraft - Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf9f8",
+                        "inverse-primary": "#c6c6c7",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#00458f",
+                        "tertiary-fixed-dim": "#abc7ff",
+                        "on-secondary-container": "#616365",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e2e2e4",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#313030",
+                        "primary-fixed": "#e2e2e2",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "outline": "#747878",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-surface": "#1c1b1b",
+                        "surface-container-low": "#f6f3f2",
+                        "primary-container": "#ffffff",
+                        "tertiary-container": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "secondary-fixed-dim": "#c6c6c8",
+                        "secondary-container": "#dfdfe1",
+                        "tertiary": "#005cbb",
+                        "outline-variant": "#c4c7c8",
+                        "surface-tint": "#5d5f5f",
+                        "surface-variant": "#e5e2e1",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-primary-container": "#747676",
+                        "error": "#ba1a1a",
+                        "secondary": "#5d5e60",
+                        "on-secondary-fixed-variant": "#454749",
+                        "surface-container": "#f0edec",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "primary": "#5d5f5f",
+                        "surface": "#fcf9f8",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-primary-fixed-variant": "#454747",
+                        "tertiary-fixed": "#d7e2ff",
+                        "on-tertiary-fixed": "#001b3f",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1c1b1b",
+                        "on-tertiary-container": "#0973e5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#444748"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "16px",
+                        "scale": "{'xs': '4px', 'sm': '8px', 'md': '16px', 'lg': '24px', 'xl': '48px', 'xxl': '80px'}",
+                        "base": "8px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "display-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "title-lg": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-md": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "title-lg": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["56px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F5F5F7; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #0071E3;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #0071E3;
+        }
+    </style>
+</head>
+<body class="font-body-lg text-body-lg text-on-surface antialiased min-h-screen flex flex-col md:flex-row">
+<!-- SideNavBar (Web) -->
+<nav class="hidden md:flex bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant/20 docked left-0 h-full w-64 fixed left-0 top-16 h-[calc(100vh-64px)] flex-col p-4 gap-2 z-40">
+<div class="flex-1 space-y-1 mt-8">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md hover:translate-x-1 transition-all duration-200 ease-out-cubic" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md hover:translate-x-1 transition-all duration-200 ease-out-cubic" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span>Calendar</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md hover:translate-x-1 transition-all duration-200 ease-out-cubic" href="#">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+<span>Generator</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md hover:translate-x-1 transition-all duration-200 ease-out-cubic" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span>Posts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md text-label-md hover:translate-x-1 transition-all duration-200 ease-out-cubic" href="#">
+<span class="material-symbols-outlined text-[20px]">leaderboard</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white text-primary shadow-sm rounded-lg font-bold font-label-md text-label-md ease-out-cubic transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/20">
+<button class="w-full py-2 px-4 bg-tertiary text-on-tertiary rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">Upgrade to Pro</button>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="bg-surface/70 dark:bg-surface-dim/70 backdrop-blur-xl border-b border-outline-variant/30 docked full-width top-0 fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16">
+<div class="flex items-center gap-4">
+<span class="font-display-md text-display-md font-bold text-tertiary md:hidden">Autodraft</span>
+<span class="font-display-md text-display-md font-bold text-tertiary hidden md:block pl-2">Autodraft</span>
+</div>
+<div class="flex items-center gap-4 text-primary">
+<button class="p-2 hover:text-primary transition-colors duration-200 scale-95 active:scale-90 transition-transform text-on-surface-variant">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="p-2 hover:text-primary transition-colors duration-200 scale-95 active:scale-90 transition-transform text-on-surface-variant relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<img alt="User profile" class="w-8 h-8 rounded-full border border-outline-variant/30 object-cover" data-alt="A professional headshot of a young man with a subtle smile, wearing a dark crewneck sweater. The lighting is soft and natural, emphasizing a clean, modern aesthetic suitable for a tech platform profile picture. The background is a slightly blurred, neutral light gray, maintaining focus on the subject." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdtitCgiWyKBKXNT-DMJcQ27Id3od9-EtNFgpJgTe5cdZDC0HzOJ7fD7eonRK9n1IMiFp4FSJ5C54Y3dAR149mZ7IfYmsHTZQYvgtQHsnmjxBrRmnlGAjWrJxcUxpP-R8T2Z71S7z7uAstSk64smxJVdDg-8j5mBC7KRcIqZQconRlCAmk0aOeL-Sy15kriK4OoXvkULvKGtcgjmmb-ZjLXytmTLgpTqIy0M3yxnskHLAykpBiUXUwofrAgXBQKwkc_wkO_ehM1Io"/>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 mt-16 p-margin-mobile md:p-margin-desktop max-w-container-max mx-auto w-full">
+<div class="mb-8">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface tracking-tight">Settings</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">Manage your account settings and preferences.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Settings Navigation Sidebar (Inner) -->
+<aside class="lg:col-span-3 space-y-1">
+<nav class="sticky top-24">
+<a class="block px-4 py-2.5 rounded-lg text-primary font-bold bg-white border border-outline-variant/20 shadow-sm font-body-sm text-body-sm mb-1" href="#profile">Profile</a>
+<a class="block px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low font-body-sm text-body-sm transition-colors mb-1" href="#connections">Connections</a>
+<a class="block px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low font-body-sm text-body-sm transition-colors mb-1" href="#preferences">Content Preferences</a>
+<a class="block px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low font-body-sm text-body-sm transition-colors mb-1" href="#billing">Billing</a>
+<a class="block px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low font-body-sm text-body-sm transition-colors mb-1" href="#notifications">Notifications</a>
+</nav>
+</aside>
+<!-- Settings Content -->
+<div class="lg:col-span-9 space-y-12">
+<!-- Profile Section -->
+<section class="scroll-mt-24" id="profile">
+<div class="border-b border-outline-variant/30 pb-4 mb-6">
+<h2 class="font-title-lg text-title-lg text-on-surface">Profile Settings</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Update your personal details and public profile.</p>
+</div>
+<div class="bg-primary-container border border-outline-variant/30 rounded-xl p-6 shadow-sm">
+<div class="flex items-center gap-6 mb-8">
+<div class="relative">
+<img alt="User avatar" class="w-20 h-20 rounded-full border border-outline-variant/30 object-cover" data-alt="A professional headshot of a young man with a subtle smile, wearing a dark crewneck sweater. The lighting is soft and natural, emphasizing a clean, modern aesthetic suitable for a tech platform profile picture. The background is a slightly blurred, neutral light gray, maintaining focus on the subject." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6Li-aOZ57ZCGo3u9pOc0KogMji2Y-bF_nuIAPHXJkVSEd8yeviyEmD-BxO1R-1i3yGmbQVEsiCT1CWGLaNwK2N0wFs4clDFSqmVpP_nCMpspmhS8mKvTnRdQ1HTBDfU12kgDc701PMlMVpPmsdtDBBpxwl3iMQwtfneRc1kuQRz-IcDPsECFv_tdeDxBlh6OFvD1QgG62uZ1ox1XoPBjml_6PCAd-HdXL-GG4JVNNPvNAnuW_A0N8O1hMyEbZZIoOKJ_YgNZ0zgQ"/>
+<button class="absolute bottom-0 right-0 bg-white border border-outline-variant rounded-full p-1.5 shadow-sm hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">edit</span>
+</button>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-2">Avatar</h3>
+<div class="flex gap-3">
+<button class="px-4 py-2 bg-white border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors">Change</button>
+<button class="px-4 py-2 text-error font-label-md text-label-md hover:bg-error-container/50 rounded-lg transition-colors">Remove</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">First Name</label>
+<input class="w-full px-3 py-2 bg-white border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-[#0071E3] focus:ring-1 focus:ring-[#0071E3]/20 transition-all" type="text" value="Alex"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Last Name</label>
+<input class="w-full px-3 py-2 bg-white border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-[#0071E3] focus:ring-1 focus:ring-[#0071E3]/20 transition-all" type="text" value="Morgan"/>
+</div>
+<div class="space-y-2 md:col-span-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Email Address</label>
+<input class="w-full px-3 py-2 bg-white border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-[#0071E3] focus:ring-1 focus:ring-[#0071E3]/20 transition-all" type="email" value="alex.morgan@example.com"/>
+</div>
+</div>
+<div class="mt-6 flex justify-end">
+<button class="px-6 py-2.5 bg-[#0071E3] text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm">Save Changes</button>
+</div>
+</div>
+</section>
+<!-- LinkedIn Connection -->
+<section class="scroll-mt-24" id="connections">
+<div class="border-b border-outline-variant/30 pb-4 mb-6">
+<h2 class="font-title-lg text-title-lg text-on-surface">Connections</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage your connected social accounts.</p>
+</div>
+<div class="bg-primary-container border border-outline-variant/30 rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-[#0A66C2] rounded-lg flex items-center justify-center text-white shrink-0">
+<span class="font-display-md text-[24px] font-bold">in</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">LinkedIn</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Connected as Alex Morgan</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-md text-[10px] uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Active
+                            </span>
+<button class="px-4 py-2 bg-white border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors">Disconnect</button>
+</div>
+</div>
+</section>
+<!-- Billing Section -->
+<section class="scroll-mt-24" id="billing">
+<div class="border-b border-outline-variant/30 pb-4 mb-6">
+<h2 class="font-title-lg text-title-lg text-on-surface">Billing &amp; Subscription</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage your plan and payment methods.</p>
+</div>
+<div class="bg-primary-container border border-outline-variant/30 rounded-xl p-6 shadow-sm">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Pro Plan</h3>
+<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary rounded font-label-md text-[10px] uppercase tracking-wider border border-tertiary/20">Current</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">$29/month. Next billing date: Oct 15, 2024</p>
+</div>
+<button class="px-4 py-2 bg-white border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors">Manage Subscription</button>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">credit_card</span>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface font-medium">Visa ending in 4242</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Expires 12/25</p>
+</div>
+</div>
+<button class="text-[#0071E3] font-label-md text-label-md hover:underline">Edit</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-bright dark:bg-inverse-surface border-t border-outline-variant/10 w-full py-xl px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto mt-24">
+<div class="font-display-md text-display-md text-primary text-[24px] mb-4 md:mb-0">Autodraft</div>
+<div class="flex gap-6 font-body-sm text-body-sm text-on-secondary-container">
+<a class="hover:text-tertiary transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="hover:text-tertiary transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="hover:text-tertiary transition-colors opacity-80 hover:opacity-100" href="#">Help Center</a>
+</div>
+<div class="font-body-sm text-body-sm text-on-secondary-container mt-4 md:mt-0">© 2024 Autodraft AI. All rights reserved.</div>
+</footer>
+</body></html>

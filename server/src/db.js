@@ -143,6 +143,10 @@ async function getAllDevUsers() {
 // ── LinkedIn Token Operations ────────────────────────────────
 
 async function saveLinkedInTokens(userId, tokens) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    logger.error(`Invalid userId format: ${userId}`);
+    return;
+  }
   await LinkedInToken.findOneAndUpdate(
     { user_id: userId },
     {
@@ -158,6 +162,7 @@ async function saveLinkedInTokens(userId, tokens) {
 }
 
 async function getLinkedInTokens(userId) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) return null;
   return LinkedInToken.findOne({ user_id: userId }).lean();
 }
 
@@ -171,6 +176,10 @@ async function isLinkedInTokenValid(userId) {
 // ── Post History Operations ──────────────────────────────────
 
 async function savePostHistory(userId, { topic, idea, postContent, linkedinPostId, status }) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    logger.error(`Invalid userId format: ${userId}`);
+    return null;
+  }
   const post = await PostHistory.create({
     user_id: userId,
     topic,
@@ -191,10 +200,12 @@ async function updatePostHistory(id, { linkedinPostId, status }) {
 }
 
 async function getPostHistory(userId, limit = 5) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) return [];
   return PostHistory.find({ user_id: userId }).sort({ createdAt: -1 }).limit(limit).lean();
 }
 
 async function getPostStats(userId) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) return { total: 0, posted: 0, failed: 0 };
   const results = await PostHistory.aggregate([
     { $match: { user_id: new mongoose.Types.ObjectId(userId) } },
     {

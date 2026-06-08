@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - Autodraft</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf9f8",
+                        "inverse-primary": "#c6c6c7",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#00458f",
+                        "tertiary-fixed-dim": "#abc7ff",
+                        "on-secondary-container": "#616365",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e2e2e4",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#313030",
+                        "primary-fixed": "#e2e2e2",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "outline": "#747878",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-surface": "#111111", /* Updated for tighter contrast */
+                        "surface-container-low": "#F5F5F7", /* Updated for secondary Apple aesthetic */
+                        "primary-container": "#ffffff",
+                        "tertiary-container": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "secondary-fixed-dim": "#c6c6c8",
+                        "secondary-container": "#dfdfe1",
+                        "tertiary": "#0071E3", /* Apple Blue Accent */
+                        "outline-variant": "#E5E5E7", /* Refined border color */
+                        "surface-tint": "#5d5f5f",
+                        "surface-variant": "#e5e2e1",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-primary-container": "#747676",
+                        "error": "#ba1a1a",
+                        "secondary": "#5d5e60",
+                        "on-secondary-fixed-variant": "#454749",
+                        "surface-container": "#f0edec",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "primary": "#5d5f5f",
+                        "surface": "#fcf9f8",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-primary-fixed-variant": "#454747",
+                        "tertiary-fixed": "#d7e2ff",
+                        "on-tertiary-fixed": "#001b3f",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#111111",
+                        "on-tertiary-container": "#0973e5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#616365"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "16px",
+                        "scale": "{'xs': '4px', 'sm': '8px', 'md': '16px', 'lg': '24px', 'xl': '48px', 'xxl': '80px'}",
+                        "base": "8px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "display-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "title-lg": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-md": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "title-lg": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["56px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #fcf9f8; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid #E5E5E7;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+        .form-input {
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #0071E3;
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+        }
+        .apple-toggle {
+            appearance: none;
+            width: 44px;
+            height: 24px;
+            background: #E5E5E7;
+            border-radius: 12px;
+            position: relative;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .apple-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .apple-toggle:checked {
+            background: #34C759;
+        }
+        .apple-toggle:checked::after {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body class="text-on-surface font-body-lg text-body-lg min-h-screen flex flex-col md:flex-row antialiased selection:bg-tertiary/20 selection:text-tertiary">
+<!-- TopNavBar (Mobile Only) -->
+<nav class="md:hidden fixed top-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-surface/70 backdrop-blur-xl border-b border-outline-variant/30 text-primary font-body-lg text-body-lg">
+<div class="flex items-center gap-2">
+<span class="font-display-md text-[24px] font-bold text-tertiary">Autodraft</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="scale-95 active:scale-90 transition-transform hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+</button>
+<button class="scale-95 active:scale-90 transition-transform hover:text-primary transition-colors duration-200 relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<img alt="User profile" class="w-8 h-8 rounded-full border border-outline-variant/30 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6Li-aOZ57ZCGo3u9pOc0KogMji2Y-bF_nuIAPHXJkVSEd8yeviyEmD-BxO1R-1i3yGmbQVEsiCT1CWGLaNwK2N0wFs4clDFSqmVpP_nCMpspmhS8mKvTnRdQ1HTBDfU12kgDc701PMlMVpPmsdtDBBpxwl3iMQwtfneRc1kuQRz-IcDPsECFv_tdeDxBlh6OFvD1QgG62uZ1ox1XoPBjml_6PCAd-HdXL-GG4JVNNPvNAnuW_A0N8O1hMyEbZZIoOKJ_YgNZ0zgQ"/>
+</div>
+</nav>
+<!-- SideNavBar (Desktop Only) -->
+<aside class="hidden md:flex fixed left-0 top-0 h-full w-64 bg-surface-container-low border-r border-outline-variant/20 flex-col p-4 gap-2 z-40">
+<div class="flex flex-col gap-1 mb-8 px-2 mt-4">
+<h1 class="font-display-md text-[24px] font-bold text-tertiary">Autodraft</h1>
+<span class="font-label-md text-label-md text-on-surface-variant">Premium AI SaaS</span>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200 ease-out-cubic font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200 ease-out-cubic font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+                Calendar
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200 ease-out-cubic font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+                Generator
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200 ease-out-cubic font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">description</span>
+                Posts
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:translate-x-1 transition-all duration-200 ease-out-cubic font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white text-primary shadow-sm rounded-lg font-bold font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto">
+<button class="w-full py-2 bg-tertiary text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                Upgrade to Pro
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-grow md:ml-64 pt-20 md:pt-8 px-4 md:px-gutter max-w-container-max mx-auto w-full pb-20">
+<!-- Header -->
+<header class="mb-10 flex justify-between items-end border-b border-outline-variant/30 pb-6">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2 tracking-tight">Settings</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage your account settings and preferences.</p>
+</div>
+<!-- Desktop Top Actions (Mirrors TopNavBar functionality) -->
+<div class="hidden md:flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full ring-2 ring-background"></span>
+</button>
+<img alt="User profile" class="w-10 h-10 rounded-full border border-outline-variant/30 cursor-pointer object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6Li-aOZ57ZCGo3u9pOc0KogMji2Y-bF_nuIAPHXJkVSEd8yeviyEmD-BxO1R-1i3yGmbQVEsiCT1CWGLaNwK2N0wFs4clDFSqmVpP_nCMpspmhS8mKvTnRdQ1HTBDfU12kgDc701PMlMVpPmsdtDBBpxwl3iMQwtfneRc1kuQRz-IcDPsECFv_tdeDxBlh6OFvD1QgG62uZ1ox1XoPBjml_6PCAd-HdXL-GG4JVNNPvNAnuW_A0N8O1hMyEbZZIoOKJ_YgNZ0zgQ"/>
+</div>
+</header>
+<div class="flex flex-col lg:flex-row gap-12">
+<!-- Settings Navigation -->
+<aside class="w-full lg:w-64 flex-shrink-0">
+<nav class="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 sticky top-8">
+<a class="flex-shrink-0 px-4 py-2.5 bg-white text-on-surface font-bold rounded-lg border border-outline-variant/50 shadow-sm font-label-md text-label-md" href="#profile">
+                        Profile
+                    </a>
+<a class="flex-shrink-0 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors font-label-md text-label-md" href="#connections">
+                        Connections
+                    </a>
+<a class="flex-shrink-0 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors font-label-md text-label-md" href="#preferences">
+                        Content Preferences
+                    </a>
+<a class="flex-shrink-0 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors font-label-md text-label-md" href="#billing">
+                        Billing
+                    </a>
+<a class="flex-shrink-0 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors font-label-md text-label-md" href="#notifications">
+                        Notifications
+                    </a>
+</nav>
+</aside>
+<!-- Settings Content Sections -->
+<div class="flex-grow space-y-16 max-w-3xl">
+<!-- Profile Section -->
+<section class="scroll-mt-12" id="profile">
+<div class="mb-6">
+<h2 class="font-title-lg text-title-lg text-on-surface mb-1">Profile Settings</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Update your personal details and public profile.</p>
+</div>
+<div class="glass-card rounded-2xl p-8">
+<div class="flex items-center gap-6 mb-10 pb-8 border-b border-outline-variant/30">
+<div class="relative group">
+<div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-outline-variant to-surface-container-low">
+<img alt="User avatar" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6Li-aOZ57ZCGo3u9pOc0KogMji2Y-bF_nuIAPHXJkVSEd8yeviyEmD-BxO1R-1i3yGmbQVEsiCT1CWGLaNwK2N0wFs4clDFSqmVpP_nCMpspmhS8mKvTnRdQ1HTBDfU12kgDc701PMlMVpPmsdtDBBpxwl3iMQwtfneRc1kuQRz-IcDPsECFv_tdeDxBlh6OFvD1QgG62uZ1ox1XoPBjml_6PCAd-HdXL-GG4JVNNPvNAnuW_A0N8O1hMyEbZZIoOKJ_YgNZ0zgQ"/>
+</div>
+<button class="absolute bottom-0 right-0 bg-white border border-outline-variant rounded-full p-2 shadow-md hover:bg-surface-container-low transition-colors group-hover:scale-105">
+<span class="material-symbols-outlined text-[18px] text-on-surface">edit</span>
+</button>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Avatar</h3>
+<div class="flex gap-3">
+<button class="px-4 py-2 bg-white border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors shadow-sm">Change</button>
+<button class="px-4 py-2 text-error font-label-md text-label-md hover:bg-error-container/50 rounded-lg transition-colors">Remove</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">First Name</label>
+<input class="form-input w-full px-4 py-2.5 bg-white border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface" type="text" value="Alex"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Last Name</label>
+<input class="form-input w-full px-4 py-2.5 bg-white border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface" type="text" value="Morgan"/>
+</div>
+<div class="space-y-2 md:col-span-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Email Address</label>
+<input class="form-input w-full px-4 py-2.5 bg-white border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface" type="email" value="alex.morgan@example.com"/>
+</div>
+</div>
+<div class="mt-10 flex justify-end">
+<button class="px-6 py-3 bg-tertiary text-white rounded-xl font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm font-medium">Save Changes</button>
+</div>
+</div>
+</section>
+<!-- LinkedIn Connection -->
+<section class="scroll-mt-12" id="connections">
+<div class="mb-6">
+<h2 class="font-title-lg text-title-lg text-on-surface mb-1">Connections</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage your connected social accounts.</p>
+</div>
+<div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-shadow">
+<div class="flex items-center gap-5">
+<div class="w-14 h-14 bg-[#0A66C2] rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm">
+<span class="font-display-md text-[28px] font-bold">in</span>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg font-semibold text-on-surface mb-1">LinkedIn</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Connected as Alex Morgan</p>
+</div>
+</div>
+<div class="flex items-center gap-4 border-t md:border-t-0 border-outline-variant/30 pt-4 md:pt-0">
+<div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant/50">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34C759] opacity-40"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#34C759]"></span>
+</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider text-on-surface-variant font-medium">Active</span>
+</div>
+<button class="px-4 py-2 bg-white border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors shadow-sm">Disconnect</button>
+</div>
+</div>
+</section>
+<!-- Billing Section -->
+<section class="scroll-mt-12" id="billing">
+<div class="mb-6">
+<h2 class="font-title-lg text-title-lg text-on-surface mb-1">Billing &amp; Subscription</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage your plan and payment methods.</p>
+</div>
+<div class="glass-card rounded-2xl overflow-hidden">
+<div class="p-8 border-b border-outline-variant/30 bg-gradient-to-br from-white to-surface-container-low/30">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<h3 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Pro Plan</h3>
+<span class="px-2.5 py-1 bg-tertiary/10 text-tertiary rounded-full font-label-md text-[11px] uppercase tracking-wider font-bold">Current</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">$29/month. Next billing date: Oct 15, 2024</p>
+</div>
+<button class="px-5 py-2.5 bg-white border border-outline-variant rounded-xl font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors shadow-sm font-medium whitespace-nowrap">Manage Subscription</button>
+</div>
+</div>
+<div class="p-8 bg-surface-container-low/50">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-4 ml-1">Payment Method</h4>
+<div class="p-5 bg-white rounded-xl border border-outline-variant/50 flex items-center justify-between shadow-sm hover:border-outline-variant transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-8 bg-surface-container-low rounded border border-outline-variant/50 flex items-center justify-center relative overflow-hidden">
+<!-- Minimalist Visa Representation -->
+<div class="font-bold text-[10px] text-tertiary italic">VISA</div>
+</div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface font-medium mb-0.5">Visa ending in 4242</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Expires 12/25</p>
+</div>
+</div>
+<button class="text-tertiary font-label-md text-label-md hover:underline font-medium px-2 py-1 rounded hover:bg-tertiary/5 transition-colors">Edit</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</body></html>

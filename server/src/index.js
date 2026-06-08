@@ -1,9 +1,11 @@
 const express = require('express');
+const cors = require('cors');
 const config = require('./config');
 const logger = require('./utils/logger');
 const db = require('./db');
 const { createTelegramBot } = require('./services/telegram');
 const linkedin = require('./services/linkedin');
+const ai = require('./services/ai');
 const { startScheduler } = require('./services/scheduler');
 const axios = require('axios');
 
@@ -27,6 +29,7 @@ async function main() {
 
   // 2. Start Express server
   const app = express();
+  app.use(cors());
   app.use(express.json());
 
   linkedin.setupOAuthRoutes(app);
@@ -51,6 +54,97 @@ async function main() {
   // Health check — production pings this to check if dev server is live
   app.get('/api/dev-health', (req, res) => {
     res.json({ status: 'ok', mode: 'dev-server', uptime: Math.floor(process.uptime()) + 's' });
+  });
+
+  // Helper to look up user by Telegram Chat ID
+  app.get('/api/dev-user', async (req, res) => {
+    const chatId = req.query.chatId;
+    if (!chatId) return res.status(400).json({ error: 'Missing chatId' });
+    const user = await db.getUserByChatId(chatId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ _id: user._id, name: user.name, chatId: user.telegram_chat_id });
+  });
+
+  // --- DEV WORKFLOW ENDPOINTS ---
+
+  app.post('/api/dev/generate-topics', async (req, res) => {
+    try {
+      const { userId, keyword } = req.body;
+      if (!userId) return res.status(400).json({ error: 'Missing userId' });
+      const user = await db.getUserById(userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      
+      const isOrgPost = Boolean(user.linkedin_org_id);
+      let topics;
+      if (keyword) {
+        topics = await ai.generateTopicsFromKeyword(keyword, user.keywords || [], isOrgPost);
+      } else {
+        topics = await ai.generateTopics(user.keywords || [], isOrgPost);
+      }
+      res.json({ topics });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/dev/generate-ideas', async (req, res) => {
+    try {
+      const { userId, topic } = req.body;
+      if (!userId || !topic) return res.status(400).json({ error: 'Missing userId or topic' });
+      const user = await db.getUserById(userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      
+      const tone = user.content_tone || 'professional';
+      const isOrgPost = Boolean(user.linkedin_org_id);
+      
+      const ideas = await ai.generateIdeas(topic, tone, isOrgPost);
+      res.json({ ideas });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/dev/generate-post', async (req, res) => {
+    try {
+      const { userId, topic, idea } = req.body;
+      if (!userId || !topic || !idea) return res.status(400).json({ error: 'Missing userId, topic, or idea' });
+      const user = await db.getUserById(userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      
+      const tone = user.content_tone || 'professional';
+      const isOrgPost = Boolean(user.linkedin_org_id);
+      const userContext = { name: user.name, profession: user.profession, domain: user.domain };
+      
+      const postContent = await ai.generatePost(idea, tone, isOrgPost, userContext);
+      
+      // Save to history as draft
+      const post = await db.savePostHistory(userId, {
+        topic, idea: idea.hook, postContent, status: 'drafted'
+      });
+      
+      res.json({ postContent, historyId: post ? post._id : null });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/dev/post-to-linkedin', async (req, res) => {
+    try {
+      const { userId, postContent, historyId } = req.body;
+      if (!userId || !postContent) return res.status(400).json({ error: 'Missing userId or postContent' });
+      
+      const result = await linkedin.createPost(userId, postContent);
+      
+      if (historyId) {
+        await db.updatePostHistory(historyId, { linkedinPostId: result.postId, status: 'posted' });
+      }
+      res.json({ success: true, result });
+    } catch (error) {
+      if (req.body.historyId) {
+        await db.updatePostHistory(req.body.historyId, { status: 'failed' });
+      }
+      res.status(500).json({ error: error.message });
+    }
   });
 
   let devBot = null; // Will be set if this is a dev server

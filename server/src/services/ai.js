@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
 
 // Primary and fallback models
-const MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+const MODELS = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
 
 // STRICT rule appended to every content-generation prompt
 const NO_TEMPLATE_RULE = `

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Post Editor - Autodraft</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf9f8",
+                        "inverse-primary": "#c6c6c7",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#00458f",
+                        "tertiary-fixed-dim": "#abc7ff",
+                        "on-secondary-container": "#616365",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e2e2e4",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#313030",
+                        "primary-fixed": "#e2e2e2",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "outline": "#747878",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-surface": "#1c1b1b",
+                        "surface-container-low": "#f6f3f2",
+                        "primary-container": "#ffffff",
+                        "tertiary-container": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "secondary-fixed-dim": "#c6c6c8",
+                        "secondary-container": "#dfdfe1",
+                        "tertiary": "#005cbb",
+                        "outline-variant": "#c4c7c8",
+                        "surface-tint": "#5d5f5f",
+                        "surface-variant": "#e5e2e1",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-primary-container": "#747676",
+                        "error": "#ba1a1a",
+                        "secondary": "#5d5e60",
+                        "on-secondary-fixed-variant": "#454749",
+                        "surface-container": "#f0edec",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "primary": "#5d5f5f",
+                        "surface": "#fcf9f8",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-primary-fixed-variant": "#454747",
+                        "tertiary-fixed": "#d7e2ff",
+                        "on-tertiary-fixed": "#001b3f",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1c1b1b",
+                        "on-tertiary-container": "#0973e5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#444748"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "display-md": ["Hanken Grotesk"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "title-lg": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-md": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "title-lg": ["20px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "display-lg": ["56px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .ease-out-cubic {
+            transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg min-h-screen flex flex-col antialiased">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 bg-surface/70 backdrop-blur-xl border-b border-outline-variant/30">
+<div class="flex items-center gap-4">
+<span class="font-display-md text-display-md font-bold text-tertiary">Autodraft</span>
+<span class="text-on-surface-variant font-body-sm px-2 py-1 bg-surface-container rounded-md border border-outline-variant/30 ml-4 hidden md:inline-block">Drafting: Q3 Launch Announc...</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200 scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-200 scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArGVYcv4QZTj8REx9Pkva78OIdisfZrlX555-LHv0eUfRwK8CQaeq1tD_IuKL9s97fjt9Bst5hKJMog96VLdhFYHS_fXfAA0Udb5gVGSUgAjvcAJ8jONe65d4NPEWaYRRv9jUTBhpOr5B8bheH3kn0NMvpf9I9h_TsEbHRllQWv5J51YFfRU1d92zRhkJeFjGo3kwzr7osD7FsBBqxaFfQKl3nOdv3jmzBO5jErLeEg21D0FqV195jos9DdcWmt0-ClptHamLoaHY"/>
+</div>
+<button class="ml-2 bg-[#0071E3] hover:bg-opacity-90 text-on-tertiary font-label-md text-label-md px-4 py-2 rounded-lg transition-all duration-200 ease-out-cubic shadow-sm hover:-translate-y-px">
+                Publish Now
+            </button>
+</div>
+</nav>
+<!-- SideNavBar (Hidden on Mobile, visible on lg as sidebar, simplified for this specific editor view to maximize canvas) -->
+<!-- Usually we'd include the full SideNav here, but per instructions "If the user is in a focused journey... hide the shell to prioritize the Canvas." An editor is a focused journey. I will minimize the sidebar to just icons or hide it completely. Decided to keep a minimal version for quick navigation if needed, or hide completely. Let's hide it completely for pure focus, but the JSON provided SideNavBar. I will render a collapsed version to satisfy the JSON while respecting the focus mandate. -->
+<aside class="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-16 flex-col items-center py-4 gap-4 bg-surface-container-low border-r border-outline-variant/20 z-40">
+<!-- Dashboard -->
+<a class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:text-primary transition-colors" href="#" title="Dashboard">
+<span class="material-symbols-outlined">dashboard</span>
+</a>
+<!-- Calendar -->
+<a class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:text-primary transition-colors" href="#" title="Calendar">
+<span class="material-symbols-outlined">calendar_month</span>
+</a>
+<!-- Posts (Active) -->
+<a class="p-2 bg-white text-primary shadow-sm rounded-lg font-bold" href="#" title="Posts">
+<span class="material-symbols-outlined">description</span>
+</a>
+<div class="flex-grow"></div>
+<!-- Settings -->
+<a class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg hover:text-primary transition-colors" href="#" title="Settings">
+<span class="material-symbols-outlined">settings</span>
+</a>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-16 md:pl-16 flex flex-col lg:flex-row min-h-screen">
+<!-- Left Column: Editor & Metrics -->
+<div class="flex-1 flex flex-col lg:w-3/5 lg:border-r border-outline-variant/20 bg-primary-container relative">
+<!-- Editor Header -->
+<div class="px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center bg-surface-bright sticky top-16 z-30">
+<div class="flex gap-2">
+<button class="px-3 py-1.5 text-label-md font-label-md bg-surface-container text-on-surface-variant rounded-md hover:bg-surface-container-high transition-colors">Save Draft</button>
+<button class="px-3 py-1.5 text-label-md font-label-md text-tertiary hover:bg-tertiary/10 rounded-md transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">history</span> History
+                    </button>
+</div>
+<div class="flex items-center gap-2 text-label-md font-label-md text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Auto-saved
+                </div>
+</div>
+<!-- Rich Text Editor Canvas -->
+<div class="flex-grow p-8 lg:p-12 overflow-y-auto">
+<div class="max-w-2xl mx-auto">
+<input class="w-full bg-transparent border-none font-headline-lg text-headline-lg text-on-surface placeholder:text-outline-variant focus:ring-0 mb-6 p-0" placeholder="Post Title (Internal)" type="text" value="Excited to announce our Q3 Product Launch!"/>
+<!-- Faux Content Editable Area -->
+<div class="outline-none min-h-[300px] text-body-lg text-on-surface-variant leading-relaxed" contenteditable="true" style="white-space: pre-wrap;">We've been quietly building something that fundamentally changes how teams manage their design systems. 🛠️
+
+For the past 6 months, our engineering and product teams have been heads down, rethinking the workflow from the ground up. The friction between design tokens and implementation has always been a bottleneck. Not anymore.
+
+Today, we are thrilled to unveil Autodraft 2.0. 🚀
+
+What's new:
+• Real-time token synchronization across Figma and codebase.
+• Automated PR generation for style updates.
+• Zero-config integration with major modern frameworks.
+
+We believe that high-performing teams shouldn't waste time on manual translation. They should focus on crafting incredible user experiences.
+
+Check out the full release notes in the comments below, and let us know what you think! 👇
+
+#productlaunch #designsystems #engineering #innovation</div>
+</div>
+</div>
+<!-- Floating Formatting Toolbar (Mockup of "appears on selection") -->
+<div class="absolute top-[40%] left-1/2 transform -translate-x-1/2 bg-surface-container-highest shadow-lg rounded-lg border border-outline-variant/20 px-2 py-1 flex items-center gap-1 opacity-0 pointer-events-none hover:opacity-100 hover:pointer-events-auto transition-opacity duration-200 z-40" id="mock-toolbar">
+<button class="p-1.5 text-on-surface-variant hover:bg-surface hover:text-primary rounded-md"><span class="material-symbols-outlined text-[20px]">format_bold</span></button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface hover:text-primary rounded-md"><span class="material-symbols-outlined text-[20px]">format_italic</span></button>
+<div class="w-px h-4 bg-outline-variant/50 mx-1"></div>
+<button class="p-1.5 text-tertiary hover:bg-tertiary/10 rounded-md"><span class="material-symbols-outlined text-[20px]">auto_awesome</span></button>
+</div>
+<!-- AI Optimization Dashboard (Below Editor) -->
+<div class="border-t border-outline-variant/20 bg-surface-bright p-8">
+<div class="max-w-2xl mx-auto">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">analytics</span> AI Optimization
+                        </h3>
+<!-- Prominent Score -->
+<div class="flex items-center gap-3 bg-surface-container px-4 py-2 rounded-full border border-outline-variant/30">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Overall Reach Score</span>
+<span class="font-headline-lg text-[24px] text-tertiary leading-none">88<span class="text-[16px] text-outline">/100</span></span>
+</div>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-3 gap-4 mb-6">
+<!-- Metric 1 -->
+<div class="bg-primary-container p-4 rounded-xl border border-outline-variant/30">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-label-md text-on-surface-variant">Hook Strength</span>
+<span class="material-symbols-outlined text-[16px] text-emerald-500">check_circle</span>
+</div>
+<div class="font-title-lg text-title-lg text-on-surface mb-1">Strong</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-primary-container p-4 rounded-xl border border-outline-variant/30">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-label-md text-on-surface-variant">Readability</span>
+<span class="material-symbols-outlined text-[16px] text-amber-500">warning</span>
+</div>
+<div class="font-title-lg text-title-lg text-on-surface mb-1">Fair</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-amber-500 h-1.5 rounded-full" style="width: 60%"></div>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-primary-container p-4 rounded-xl border border-outline-variant/30">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-label-md text-on-surface-variant">Authenticity</span>
+<span class="material-symbols-outlined text-[16px] text-emerald-500">check_circle</span>
+</div>
+<div class="font-title-lg text-title-lg text-on-surface mb-1">High</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-emerald-500 h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+</div>
+</div>
+<!-- Suggestions Cards -->
+<div class="space-y-3">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Suggestions</h4>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 flex gap-4 items-start group hover:-translate-y-px transition-transform ease-out-cubic">
+<div class="p-2 bg-amber-500/10 rounded-lg text-amber-600 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">format_align_left</span>
+</div>
+<div class="flex-grow">
+<p class="font-body-sm text-body-sm text-on-surface font-medium mb-1">Break up paragraph 2</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Shorter paragraphs perform 24% better on mobile feeds. Consider splitting "For the past 6 months..." into two lines.</p>
+</div>
+<button class="text-tertiary font-label-md text-label-md bg-tertiary/5 px-3 py-1.5 rounded-md hover:bg-tertiary/10 transition-colors opacity-0 group-hover:opacity-100">Fix</button>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 flex gap-4 items-start group hover:-translate-y-px transition-transform ease-out-cubic">
+<div class="p-2 bg-tertiary/10 rounded-lg text-tertiary mt-0.5">
+<span class="material-symbols-outlined text-[20px]">tag</span>
+</div>
+<div class="flex-grow">
+<p class="font-body-sm text-body-sm text-on-surface font-medium mb-1">Optimize Hashtags</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Adding #SaaS could increase reach to relevant product managers by ~12% based on current trending topics.</p>
+</div>
+<button class="text-tertiary font-label-md text-label-md bg-tertiary/5 px-3 py-1.5 rounded-md hover:bg-tertiary/10 transition-colors opacity-0 group-hover:opacity-100">Apply</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Live Preview -->
+<div class="lg:w-2/5 bg-surface-container-low p-8 flex flex-col items-center border-t lg:border-t-0 border-outline-variant/20">
+<!-- Preview Controls -->
+<div class="w-full max-w-sm mb-6 flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Live Preview</span>
+<div class="flex bg-surface-container-highest rounded-lg p-1 border border-outline-variant/20">
+<button class="px-3 py-1 rounded-md bg-primary-container shadow-sm text-primary transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">smartphone</span>
+</button>
+<button class="px-3 py-1 rounded-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">desktop_mac</span>
+</button>
+</div>
+</div>
+<!-- Mobile Device Mockup -->
+<div class="w-full max-w-[340px] bg-primary-container rounded-[2rem] shadow-xl border-[8px] border-surface-container-highest overflow-hidden relative flex-grow max-h-[700px] flex flex-col">
+<!-- Status Bar Mock -->
+<div class="h-6 w-full bg-primary-container flex justify-between items-center px-4 text-[10px] text-on-surface-variant font-medium">
+<span>9:41</span>
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-[12px]">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[12px]">wifi</span>
+<span class="material-symbols-outlined text-[12px]">battery_full</span>
+</div>
+</div>
+<!-- LinkedIn App Header Mock -->
+<div class="flex items-center px-4 py-2 border-b border-outline-variant/20 gap-3 bg-primary-container">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAttsjLqNN_pEsO907Y_NF9tAn6bhOlKIY0BeEHF9ZOlWNR3m9PyLiXurmbzYikS17npbQzi1ZNWVhuPzJtI0yJJKkmGYdO7dI7a8fUHasZEUAVQU82V7cSLzYPzx71l5PouesGQ-37H2uhODBmhVXAlkiVPJniUXKROtQ6r1N3pr_HlfFA-qQSha70_fsHNEhq8tI5JTUflYIQf0S4G6zAeSUqETFOAtOYYH3T56_Kn07_gO1EWU2I-dpB2N4LhHZp-tCsw9nnEO8"/>
+</div>
+<div class="flex-grow bg-surface-container-low rounded-md h-8 flex items-center px-3">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">search</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">chat</span>
+</div>
+<!-- Post Preview Content -->
+<div class="p-4 flex-grow overflow-y-auto bg-surface-container-low/30">
+<div class="bg-primary-container rounded-lg border border-outline-variant/20 p-4 shadow-sm">
+<!-- Post Header -->
+<div class="flex items-start gap-3 mb-3">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/20">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFSMuWBljgrdB1xBS3XC_9dJz1q-R8bU4jqO-PXqt--sR_67tafq3SYqsZlR5_Xwa-eRsdaRR7d9AX3sAPbT9j-uwgFdwJyMTRtE_N5ejCVf8fKef7lTBFDytR0S_fB8BH57PUseLh7jaMwGizt7lsh81gH5Dom4nNVRu0NuA9popS9Aa3WMY2GpTsJufDJ7OYh5NrbNzxPRm2VjSeeM5l87uMgAaNC0Z6L4GAqbJBJIAk3q0M2gw1AGYjyKUyT82GbtrDl8HAcBc"/>
+</div>
+<div>
+<h4 class="font-title-lg text-[14px] leading-tight text-on-surface font-semibold">Alex Rivera</h4>
+<p class="font-body-sm text-[12px] text-on-surface-variant leading-tight">Head of Product @ Autodraft</p>
+<p class="font-body-sm text-[10px] text-outline mt-0.5 flex items-center gap-1">Just now • <span class="material-symbols-outlined text-[10px]">public</span></p>
+</div>
+</div>
+<!-- Post Body (Synced with Editor) -->
+<div class="font-body-sm text-[13px] text-on-surface leading-relaxed mb-3 whitespace-pre-wrap">We've been quietly building something that fundamentally changes how teams manage their design systems. 🛠️
+
+For the past 6 months, our engineering and product teams have been heads down, rethinking the workflow from the ground up... <span class="text-tertiary cursor-pointer hover:underline">see more</span></div>
+<!-- Image Attachment Mock -->
+<div class="w-full h-40 bg-surface-container rounded-md border border-outline-variant/20 mb-3 overflow-hidden flex items-center justify-center">
+<img alt="A sleek, modern dashboard interface displayed on a high-resolution monitor. The screen shows intricate data visualizations with neon blue accents against a pristine white background. The setting is a minimalist, well-lit tech office with subtle architectural details in the blurred background. The overall aesthetic is premium, high-tech, and professional." class="w-full h-full object-cover" data-alt="A sleek, modern dashboard interface displayed on a high-resolution monitor. The screen shows intricate data visualizations with neon blue accents against a pristine white background. The setting is a minimalist, well-lit tech office with subtle architectural details in the blurred background. The overall aesthetic is premium, high-tech, and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACt7AUsbymb4mobTqHtFclH7IHWE9RIr4ox2b_L_hLYqiCE5Bmh3dTM6fM93KBExvNz2yNZiJDYxwcKt5s1MWqozfS4bPLEi0gXpyEt4S2OaU8pU2YKwY-IMQQSoqanXDLHnJTSu70gcuyLdT9jvfg6ON5KCU0q2ecYeh060iW5S0tEBRmsK6ndG2y-IQ8gAK4KG1hwDdulvow-vLUe5QzobSHQDKK8p6JrPD84WOnQ4eyFR5HX8UOauDueI6_YVVw0lj-21_eodQ"/>
+</div>
+<!-- Post Actions Mock -->
+<div class="flex justify-between items-center pt-2 border-t border-outline-variant/10 text-on-surface-variant px-2">
+<div class="flex items-center gap-1 cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span>
+<span class="font-body-sm text-[12px]">Like</span>
+</div>
+<div class="flex items-center gap-1 cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+<span class="font-body-sm text-[12px]">Comment</span>
+</div>
+<div class="flex items-center gap-1 cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+<span class="font-body-sm text-[12px]">Repost</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Nav Mock -->
+<div class="flex justify-around items-center px-4 py-3 border-t border-outline-variant/20 bg-primary-container text-on-surface-variant">
+<div class="flex flex-col items-center text-on-surface"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">home</span></div>
+<div class="flex flex-col items-center"><span class="material-symbols-outlined text-[20px]">group</span></div>
+<div class="flex flex-col items-center"><span class="material-symbols-outlined text-[20px]">add_box</span></div>
+<div class="flex flex-col items-center"><span class="material-symbols-outlined text-[20px]">notifications</span></div>
+<div class="flex flex-col items-center"><span class="material-symbols-outlined text-[20px]">work</span></div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple script to simulate toolbar appearing on text selection in the editor
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            const toolbar = document.getElementById('mock-toolbar');
+            
+            if (selection.toString().length > 0 && selection.rangeCount > 0) {
+                // In a real app, calculate exact position above selection. 
+                // For mockup, just show the fixed one.
+                toolbar.style.opacity = '1';
+                toolbar.style.pointerEvents = 'auto';
+            } else {
+                toolbar.style.opacity = '0';
+                toolbar.style.pointerEvents = 'none';
+            }
+        });
+    </script>
+</body></html>
