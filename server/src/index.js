@@ -31,6 +31,14 @@ async function main() {
   const app = express();
   app.use(cors());
   app.use(express.json());
+  
+  // Add cookie-parser for reading JWTs
+  const cookieParser = require('cookie-parser');
+  app.use(cookieParser());
+
+  // Mount Auth Router
+  const authRoutes = require('./routes/auth');
+  app.use('/api/auth', authRoutes);
 
   linkedin.setupOAuthRoutes(app);
 

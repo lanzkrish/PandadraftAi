@@ -1,13 +1,25 @@
+"use client";
+
 import React from "react";
+import { usePathname } from "next/navigation";
 import { SideNav } from "./SideNav";
 import { TopNav } from "./TopNav";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isFullScreenPage = pathname === "/dashboard/calendar" || pathname === "/dashboard/generator" || pathname === "/dashboard/posts";
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <TopNav />
       <SideNav />
-      <main className="flex-grow md:ml-64 pt-20 md:pt-8 px-4 md:px-gutter max-w-container-max mx-auto w-full pb-20 relative z-10">
+      <main 
+        className={`flex-grow md:ml-64 relative z-10 ${
+          isFullScreenPage 
+            ? "pt-16 h-screen flex flex-col overflow-hidden" 
+            : "pt-20 md:pt-8 px-4 md:px-gutter max-w-container-max mx-auto w-full pb-20"
+        }`}
+      >
         {children}
       </main>
       

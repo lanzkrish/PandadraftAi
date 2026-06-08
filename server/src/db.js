@@ -4,8 +4,13 @@ const logger = require('./utils/logger');
 // ── Schemas ──────────────────────────────────────────────────
 
 const userSchema = new mongoose.Schema({
-  telegram_chat_id: { type: String, unique: true, required: true, index: true },
+  telegram_chat_id: { type: String, unique: true, sparse: true, index: true },
   telegram_username: { type: String, default: null },
+  email: { type: String, unique: true, sparse: true, index: true },
+  password_hash: { type: String, default: null },
+  linkedin_profile_url: { type: String, default: null },
+  reset_password_token: { type: String, default: null },
+  reset_password_expires: { type: Date, default: null },
   name: { type: String, default: null },
   profession: { type: String, default: null },
   domain: { type: String, default: null },
