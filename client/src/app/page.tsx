@@ -124,67 +124,165 @@ export default function LandingPage() {
         </div>
 
         {/* Pricing Preview */}
-        <div className="w-full max-w-4xl mx-auto text-center mb-16 z-10">
+        <div className="w-full max-w-[90rem] mx-auto text-center mb-16 z-10 px-4">
           <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">Simple, transparent pricing</h2>
           <p className="font-body-lg text-body-lg text-on-surface-variant mb-12">Invest in your personal brand. Cancel anytime.</p>
-          <div className="grid md:grid-cols-2 gap-8 text-left">
-            {/* Pro Tier */}
-            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-transform duration-300">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="font-title-lg text-title-lg text-on-surface">Pro</h3>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">For independent creators.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 text-left">
+            {/* Free Tier */}
+            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between">
+              <div>
+                <div className="mb-4">
+                  <h3 className="font-title-lg text-title-lg text-on-surface">Free</h3>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Try out the platform.</p>
                 </div>
-                <span className="bg-surface-container-high text-on-surface text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Popular</span>
+                <div className="my-6">
+                  <span className="font-display-md text-display-md text-on-surface">₹0</span>
+                  <span className="font-body-sm text-on-surface-variant">/mo</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    2 Credits
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    Schedule up to 2 Days
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    Basic Scheduling
+                  </li>
+                </ul>
               </div>
-              <div className="my-6">
-                <span className="font-display-md text-display-md text-on-surface">$29</span>
-                <span className="font-body-sm text-on-surface-variant">/mo</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-2 font-body-sm text-on-surface">
-                  <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
-                  30 AI-generated posts/mo
-                </li>
-                <li className="flex items-center gap-2 font-body-sm text-on-surface">
-                  <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
-                  Basic scheduling
-                </li>
-                <li className="flex items-center gap-2 font-body-sm text-on-surface">
-                  <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
-                  Standard analytics
-                </li>
-              </ul>
-              <button className="w-full py-3 bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg font-label-md hover:bg-surface-container-low transition-colors">Get Started</button>
+              <Link href="/signup?plan=Free" className="w-full">
+                <button className="w-full py-3 bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg font-label-md hover:bg-surface-container-low transition-colors">Get Started</button>
+              </Link>
             </div>
-            {/* Enterprise Tier */}
-            <div className="bg-on-surface text-surface-container-lowest rounded-2xl p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary opacity-10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <div>
-                  <h3 className="font-title-lg text-title-lg text-surface-container-lowest">Enterprise</h3>
-                  <p className="font-body-sm text-body-sm text-surface-container-lowest/70 mt-1">For agencies and teams.</p>
+
+            {/* Starter Tier */}
+            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between">
+              <div>
+                <div className="mb-4">
+                  <h3 className="font-title-lg text-title-lg text-on-surface">Starter</h3>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Basic scheduling tools.</p>
                 </div>
+                <div className="my-6">
+                  <span className="font-display-md text-display-md text-on-surface">₹99</span>
+                  <span className="font-body-sm text-on-surface-variant">/mo</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    5 Credits
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    Schedule up to 15 Days
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    LinkedIn Scheduling
+                  </li>
+                </ul>
               </div>
-              <div className="my-6 relative z-10">
-                <span className="font-display-md text-display-md text-surface-container-lowest">$99</span>
-                <span className="font-body-sm text-surface-container-lowest/70">/mo</span>
+              <Link href="/signup?plan=Starter" className="w-full">
+                <button className="w-full py-3 bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg font-label-md hover:bg-surface-container-low transition-colors">Get Started</button>
+              </Link>
+            </div>
+
+            {/* Creator Tier */}
+            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between">
+              <div>
+                <div className="mb-4">
+                  <h3 className="font-title-lg text-title-lg text-on-surface">Creator</h3>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">For regular writers.</p>
+                </div>
+                <div className="my-6">
+                  <span className="font-display-md text-display-md text-on-surface">₹249</span>
+                  <span className="font-body-sm text-on-surface-variant">/mo</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    30 Credits
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    Schedule up to 30 Days
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    AI Post Generation
+                  </li>
+                </ul>
               </div>
-              <ul className="space-y-3 mb-8 relative z-10">
-                <li className="flex items-center gap-2 font-body-sm text-surface-container-lowest">
-                  <span className="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">check_circle</span>
-                  Unlimited AI-generated posts
-                </li>
-                <li className="flex items-center gap-2 font-body-sm text-surface-container-lowest">
-                  <span className="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">check_circle</span>
-                  Advanced queue & scheduling
-                </li>
-                <li className="flex items-center gap-2 font-body-sm text-surface-container-lowest">
-                  <span className="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">check_circle</span>
-                  Deep audience analytics
-                </li>
-              </ul>
-              <button className="w-full py-3 bg-tertiary text-on-tertiary rounded-lg font-label-md hover:opacity-90 transition-opacity relative z-10">Start Trial</button>
+              <Link href="/signup?plan=Creator" className="w-full">
+                <button className="w-full py-3 bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg font-label-md hover:bg-surface-container-low transition-colors">Get Started</button>
+              </Link>
+            </div>
+
+            {/* Growth Tier */}
+            <div className="bg-on-surface text-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary opacity-10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+              <span className="absolute top-3 right-4 bg-tertiary text-on-tertiary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider z-10">Popular</span>
+              <div>
+                <div className="mb-4 mt-2 relative z-10">
+                  <h3 className="font-title-lg text-title-lg text-surface-container-lowest">Growth</h3>
+                  <p className="font-body-sm text-body-sm text-surface-container-lowest/70 mt-1">Accelerate your brand.</p>
+                </div>
+                <div className="my-6 relative z-10">
+                  <span className="font-display-md text-display-md text-surface-container-lowest">₹499</span>
+                  <span className="font-body-sm text-surface-container-lowest/70">/mo</span>
+                </div>
+                <ul className="space-y-3 mb-8 relative z-10">
+                  <li className="flex items-center gap-2 font-body-sm text-surface-container-lowest">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">check_circle</span>
+                    50 Credits
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-surface-container-lowest">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">check_circle</span>
+                    Schedule up to 60 Days
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-surface-container-lowest">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">check_circle</span>
+                    AI Suggestions + Calendar
+                  </li>
+                </ul>
+              </div>
+              <Link href="/signup?plan=Growth" className="w-full">
+                <button className="w-full py-3 bg-tertiary text-on-tertiary rounded-lg font-label-md hover:opacity-90 transition-opacity relative z-10">Start Trial</button>
+              </Link>
+            </div>
+
+            {/* Pro Tier */}
+            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between">
+              <div>
+                <div className="mb-4">
+                  <h3 className="font-title-lg text-title-lg text-on-surface">Pro</h3>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">The ultimate tool suite.</p>
+                </div>
+                <div className="my-6">
+                  <span className="font-display-md text-display-md text-on-surface">₹999</span>
+                  <span className="font-body-sm text-on-surface-variant">/mo</span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    150 Credits
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    Schedule up to 180 Days
+                  </li>
+                  <li className="flex items-center gap-2 font-body-sm text-on-surface">
+                    <span className="material-symbols-outlined text-[16px] text-tertiary">check_circle</span>
+                    Advanced AI + Priority Queue
+                  </li>
+                </ul>
+              </div>
+              <Link href="/signup?plan=Pro" className="w-full">
+                <button className="w-full py-3 bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg font-label-md hover:bg-surface-container-low transition-colors">Get Started</button>
+              </Link>
             </div>
           </div>
         </div>

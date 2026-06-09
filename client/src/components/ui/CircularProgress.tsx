@@ -1,10 +1,10 @@
 import React from "react";
 
-export function CircularProgress({ value, size = 96 }: { value: number; size?: number }) {
+export function CircularProgress({ value, size = 96, className = "" }: { value: number; size?: number; className?: string }) {
   const dashArray = `${value}, 100`;
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+    <div className={`relative flex items-center justify-center ${className}`} style={{ width: size, height: size }}>
       <svg className="circular-chart w-full h-full" viewBox="0 0 36 36">
         <path
           className="circle-bg"

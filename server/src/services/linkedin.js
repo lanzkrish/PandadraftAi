@@ -17,7 +17,7 @@ function getAuthUrl(userId) {
     client_id: config.linkedin.clientId,
     redirect_uri: config.linkedin.redirectUri,
     scope: 'openid profile w_member_social w_organization_social r_organization_social',
-    state: `autodraft_user_${userId}_${Date.now()}`,
+    state: `pandadraft_user_${userId}_${Date.now()}`,
   });
   return `${LINKEDIN_AUTH_URL}?${params.toString()}`;
 }
@@ -38,6 +38,22 @@ async function exchangeCodeForTokens(userId, code) {
       }).toString(),
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
+
+    const User = require('../models/User');
+
+    // Fetch LinkedIn user ID (sub)
+    const profileResponse = await axios.get(LINKEDIN_USERINFO_URL, {
+      headers: { Authorization: `Bearer ${response.data.access_token}` },
+    });
+    const linkedinId = profileResponse.data.sub;
+
+    if (linkedinId) {
+      const existingUser = await User.findOne({ linkedin_id: linkedinId });
+      if (existingUser && String(existingUser._id) !== String(userId)) {
+        throw new Error('This LinkedIn profile is already connected to another Pandadraft account.');
+      }
+      await User.updateOne({ _id: userId }, { $set: { linkedin_id: linkedinId } });
+    }
 
     const tokenData = {
       access_token: response.data.access_token,
@@ -207,8 +223,8 @@ function setupOAuthRoutes(app) {
       `);
     }
 
-    // Extract userId from state: autodraft_user_<userId>_<timestamp>
-    const stateMatch = state && state.match(/autodraft_user_([a-f0-9]+)_/);
+    // Extract userId from state: pandadraft_user_<userId>_<timestamp>
+    const stateMatch = state && state.match(/pandadraft_user_([a-f0-9]+)_/);
     const userId = stateMatch ? stateMatch[1] : null;
 
     if (!code || !userId) {

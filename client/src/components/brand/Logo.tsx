@@ -11,6 +11,7 @@ export function Logo({ className = "" }: { className?: string }) {
           src="/Minimal_Vector_AI_Panda_Logo-removebg-preview.png" 
           alt="Pandadraft Logo" 
           fill
+          sizes="40px"
           className="object-contain"
         />
       </div>

@@ -12,11 +12,19 @@ const navItems = [
   { name: "Generator", href: "/dashboard/generator", icon: "auto_awesome" },
   { name: "Posts", href: "/dashboard/posts", icon: "description" },
   { name: "Analytics", href: "/dashboard/analytics", icon: "leaderboard" },
+  { name: "Subscribe", href: "/dashboard/subscribe", icon: "credit_card" },
   { name: "Settings", href: "/dashboard/settings", icon: "settings" },
 ];
 
 export function SideNav() {
   const pathname = usePathname();
+  const isDemo = pathname.startsWith("/demo");
+  const basePath = isDemo ? "/demo/dashboard" : "/dashboard";
+
+  const dynamicNavItems = navItems.map(item => ({
+    ...item,
+    href: item.href.replace("/dashboard", basePath)
+  }));
 
   return (
     <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 glass-panel border-l-0 border-t-0 border-b-0 flex-col p-4 gap-2 z-40">
@@ -27,7 +35,7 @@ export function SideNav() {
         </span>
       </div>
       <nav className="flex flex-col gap-2 flex-grow">
-        {navItems.map((item) => {
+        {dynamicNavItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link

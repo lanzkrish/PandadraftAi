@@ -8,7 +8,7 @@ export default function DemoPage() {
     <div className="min-h-screen bg-surface flex flex-col items-center">
       <header className="glass-nav px-8 py-4 flex justify-between items-center w-full sticky top-0 z-50">
         <Logo />
-        <Link href="/dashboard">
+        <Link href="/demo/dashboard">
           <Button variant="primary">Enter App</Button>
         </Link>
       </header>

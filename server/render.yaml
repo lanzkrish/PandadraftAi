@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: autodraft-ai
+    name: pandadraft-ai
     runtime: node
     plan: free
     buildCommand: npm install

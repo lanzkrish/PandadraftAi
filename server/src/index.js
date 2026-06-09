@@ -11,7 +11,7 @@ const axios = require('axios');
 
 async function main() {
   const isDevServer = config.devServer.isDevServer;
-  logger.info(`🚀 AutoDraft AI starting... ${isDevServer ? '(DEV SERVER MODE)' : ''}`);
+  logger.info(`🚀 PandaDraft AI starting... ${isDevServer ? '(DEV SERVER MODE)' : ''}`);
   logger.info(`Environment: ${config.env}`);
 
   // 1. Connect to MongoDB
@@ -29,7 +29,19 @@ async function main() {
 
   // 2. Start Express server
   const app = express();
-  app.use(cors());
+  app.use(cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      const isLocal = origin.startsWith('http://localhost:') || 
+                      origin.startsWith('http://127.0.0.1:') || 
+                      origin.startsWith('chrome-extension://');
+      if (isLocal || origin === 'http://localhost:3000') {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  }));
   app.use(express.json());
   
   // Add cookie-parser for reading JWTs
@@ -40,12 +52,20 @@ async function main() {
   const authRoutes = require('./routes/auth');
   app.use('/api/auth', authRoutes);
 
+  // Mount Dashboard Router
+  const dashboardRoutes = require('./routes/dashboard');
+  app.use('/api/dashboard', dashboardRoutes);
+
+  // Mount Billing Router
+  const billingRoutes = require('./routes/billing');
+  app.use('/api/billing', billingRoutes);
+
   linkedin.setupOAuthRoutes(app);
 
   app.get('/', async (req, res) => {
     const users = await db.getAllActiveUsers();
     res.json({
-      name: 'AutoDraft AI',
+      name: 'PandaDraft AI',
       status: 'running',
       env: config.env,
       mode: isDevServer ? 'dev-server' : 'production',
@@ -216,7 +236,7 @@ async function main() {
   const users = await db.getAllActiveUsers();
   const devUsers = await db.getAllDevUsers();
   logger.info('========================================');
-  logger.info(`  AutoDraft AI is ready!`);
+  logger.info(`  PandaDraft AI is ready!`);
   logger.info(`  Mode:     ${isDevServer ? '🧪 Dev Server' : config.isProduction ? '🌐 Production' : '💻 Development'}`);
   logger.info(`  Database: MongoDB Atlas`);
   logger.info(`  Users:    ${users.length} active, ${devUsers.length} dev`);

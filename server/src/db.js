@@ -1,50 +1,9 @@
 const mongoose = require('mongoose');
 const logger = require('./utils/logger');
 
-// ── Schemas ──────────────────────────────────────────────────
-
-const userSchema = new mongoose.Schema({
-  telegram_chat_id: { type: String, unique: true, sparse: true, index: true },
-  telegram_username: { type: String, default: null },
-  email: { type: String, unique: true, sparse: true, index: true },
-  password_hash: { type: String, default: null },
-  linkedin_profile_url: { type: String, default: null },
-  reset_password_token: { type: String, default: null },
-  reset_password_expires: { type: Date, default: null },
-  name: { type: String, default: null },
-  profession: { type: String, default: null },
-  domain: { type: String, default: null },
-  status: { type: String, default: 'active', enum: ['active', 'paused', 'disabled'] },
-  linkedin_org_id: { type: String, default: '' },
-  content_categories: { type: String, default: '' },
-  content_tone: { type: String, default: 'professional' },
-  keywords: { type: [String], default: [] },  // User-entered keywords, used to enrich auto-generated topics
-  cron_schedule: { type: String, default: '0 9 * * *' },
-  timezone: { type: String, default: 'Asia/Kolkata' },
-  is_admin: { type: Boolean, default: false },
-  is_dev_user: { type: Boolean, default: false },  // Dev/test users routed to dev server
-}, { timestamps: true });
-
-const linkedinTokenSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true, required: true, index: true },
-  access_token: { type: String, required: true },
-  refresh_token: { type: String, default: null },
-  expires_in: { type: Number },
-  created_at: { type: Number, required: true }, // epoch ms
-}, { timestamps: true });
-
-const postHistorySchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  topic: { type: String },
-  idea: { type: String },
-  post_content: { type: String },
-  linkedin_post_id: { type: String, default: null },
-  status: { type: String, default: 'drafted', enum: ['drafted', 'approved', 'posted', 'failed'] },
-}, { timestamps: true });
-
-const User = mongoose.model('User', userSchema);
-const LinkedInToken = mongoose.model('LinkedInToken', linkedinTokenSchema);
-const PostHistory = mongoose.model('PostHistory', postHistorySchema);
+const User = require('./models/User');
+const LinkedInToken = require('./models/LinkedInToken');
+const PostHistory = require('./models/PostHistory');
 
 // ── Database Connection ──────────────────────────────────────
 

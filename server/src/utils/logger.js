@@ -20,7 +20,7 @@ const logger = winston.createLogger({
       ),
     }),
     new winston.transports.File({
-      filename: path.join(process.cwd(), 'logs', 'autodraft.log'),
+      filename: path.join(process.cwd(), 'logs', 'pandadraft.log'),
       maxsize: 5 * 1024 * 1024, // 5MB
       maxFiles: 3,
     }),
