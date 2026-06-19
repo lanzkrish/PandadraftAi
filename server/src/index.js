@@ -35,9 +35,19 @@ async function main() {
       const isLocal = origin.startsWith('http://localhost:') || 
                       origin.startsWith('http://127.0.0.1:') || 
                       origin.startsWith('chrome-extension://');
-      if (isLocal || origin === 'http://localhost:3000') {
+                      
+      const frontendUrl = process.env.FRONTEND_URL;
+      
+      if (
+        isLocal || 
+        origin === 'http://localhost:3000' ||
+        (frontendUrl && origin === frontendUrl) ||
+        origin.endsWith('.netlify.app') ||
+        origin.includes('autodraft')
+      ) {
         return callback(null, true);
       }
+      console.warn(`CORS blocked origin: ${origin}`);
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
