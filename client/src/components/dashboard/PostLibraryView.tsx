@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
 export function PostLibraryView() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -84,9 +85,9 @@ export function PostLibraryView() {
                   {post.post_content}
                 </p>
                 <div className="flex justify-end gap-2 mt-2 pt-4 border-t border-outline-variant/10">
-                  <button className="py-1.5 px-3 rounded text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors flex items-center gap-1">
+                  <Link href={`/dashboard/posts/${post._id}`} className="py-1.5 px-3 rounded text-primary hover:bg-surface-container-low font-label-md text-label-md transition-colors flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">visibility</span> View
-                  </button>
+                  </Link>
                 </div>
               </article>
             ))}

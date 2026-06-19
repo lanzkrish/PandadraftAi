@@ -199,7 +199,7 @@ router.put('/posts/:id/schedule', requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
     const postId = req.params.id;
-    const { scheduledFor } = req.body;
+    const { scheduledFor, content } = req.body;
 
     if (!scheduledFor) {
       return res.status(400).json({ error: 'scheduledFor date is required' });
@@ -216,6 +216,9 @@ router.put('/posts/:id/schedule', requireAuth, async (req, res) => {
 
     post.status = 'scheduled';
     post.scheduled_for = new Date(scheduledFor);
+    if (content) {
+      post.post_content = content;
+    }
     await post.save();
 
     res.json({ success: true, post });
@@ -230,6 +233,7 @@ router.post('/posts/:id/publish', requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
     const postId = req.params.id;
+    const { content } = req.body;
 
     const post = await PostHistory.findOne({ _id: postId, user_id: userId });
     if (!post) {
@@ -238,6 +242,11 @@ router.post('/posts/:id/publish', requireAuth, async (req, res) => {
 
     if (post.status === 'posted') {
       return res.status(400).json({ error: 'Post is already published' });
+    }
+
+    if (content) {
+      post.post_content = content;
+      await post.save();
     }
 
     const result = await linkedin.createPost(userId, post.post_content);
@@ -287,6 +296,66 @@ router.post('/posts', requireAuth, async (req, res) => {
     res.json({ success: true, post });
   } catch (error) {
     logger.error('Create Post Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// GET /api/dashboard/posts/:id
+router.get('/posts/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const post = await PostHistory.findOne({ _id: req.params.id, user_id: userId });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    res.json(post);
+  } catch (error) {
+    logger.error('Fetch Single Post Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// PUT /api/dashboard/posts/:id
+router.put('/posts/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { content } = req.body;
+    
+    if (!content) return res.status(400).json({ error: 'Content is required' });
+
+    const post = await PostHistory.findOne({ _id: req.params.id, user_id: userId });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    
+    if (post.status === 'posted') {
+      return res.status(400).json({ error: 'Cannot edit a published post' });
+    }
+
+    post.post_content = content;
+    await post.save();
+    
+    res.json({ success: true, post });
+  } catch (error) {
+    logger.error('Update Post Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// POST /api/dashboard/posts/:id/cancel-schedule
+router.post('/posts/:id/cancel-schedule', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const post = await PostHistory.findOne({ _id: req.params.id, user_id: userId });
+    
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (post.status !== 'scheduled') {
+      return res.status(400).json({ error: 'Post is not scheduled' });
+    }
+
+    post.status = 'drafted';
+    post.scheduled_for = null;
+    await post.save();
+
+    res.json({ success: true, post });
+  } catch (error) {
+    logger.error('Cancel Schedule Error:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });
