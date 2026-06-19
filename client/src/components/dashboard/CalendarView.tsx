@@ -18,7 +18,12 @@ export function CalendarView({ isDemo = false }: { isDemo?: boolean }) {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
         const res = await fetch(`${apiUrl}/api/dashboard/posts`, { credentials: "include" });
         const data = await res.json();
-        setPosts(data);
+        if (Array.isArray(data)) {
+          setPosts(data);
+        } else {
+          setPosts([]);
+          console.error("Failed to fetch posts, received:", data);
+        }
       } catch (error) {
         console.error("Failed to fetch posts", error);
       } finally {
