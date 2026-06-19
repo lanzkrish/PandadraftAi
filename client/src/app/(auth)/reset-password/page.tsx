@@ -6,6 +6,7 @@ import Link from "next/link";
 
 function ResetPasswordForm() {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,11 @@ function ResetPasswordForm() {
 
     if (!token || !email) {
       setError("Invalid or missing reset token.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
 
@@ -85,6 +91,19 @@ function ResetPasswordForm() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/10 transition-all" 
               placeholder="Min. 8 characters" 
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-label-md text-label-md text-on-surface">Confirm New Password</label>
+            <input 
+              type="password" 
+              required
+              minLength={8}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full bg-surface-bright border border-outline-variant rounded-lg px-4 py-3 font-body-lg text-body-lg focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/10 transition-all" 
+              placeholder="Confirm new password" 
             />
           </div>
 

@@ -29,6 +29,7 @@ async function main() {
 
   // 2. Start Express server
   const app = express();
+  app.set('trust proxy', 1); // Trust first proxy (Render) to allow secure cookies
   app.use(cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
