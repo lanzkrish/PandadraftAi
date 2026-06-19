@@ -2,6 +2,8 @@ const cron = require('node-cron');
 const config = require('../config');
 const logger = require('../utils/logger');
 const db = require('../db');
+const PostHistory = require('../models/PostHistory');
+const linkedin = require('./linkedin');
 
 /**
  * Multi-user scheduler — checks every minute which users are due
@@ -61,5 +63,40 @@ function startScheduler(triggerWorkflow) {
   logger.info('Multi-user scheduler started (checking every minute)');
   return job;
 }
+function startManualPostScheduler() {
+  const job = cron.schedule('* * * * *', async () => {
+    try {
+      const now = new Date();
+      // Find all posts that are scheduled and due
+      const duePosts = await PostHistory.find({
+        status: 'scheduled',
+        scheduled_for: { $lte: now }
+      });
 
-module.exports = { startScheduler };
+      if (duePosts.length === 0) return;
+
+      logger.info(`Manual Scheduler: Found ${duePosts.length} posts due for publishing.`);
+
+      for (const post of duePosts) {
+        try {
+          const result = await linkedin.createPost(post.user_id, post.post_content);
+          post.status = 'posted';
+          post.linkedin_post_id = result.postId;
+          await post.save();
+          logger.info(`Successfully published scheduled post ${post._id}`);
+        } catch (error) {
+          logger.error(`Failed to publish scheduled post ${post._id}: ${error.message}`);
+          post.status = 'failed';
+          await post.save();
+        }
+      }
+    } catch (err) {
+      logger.error('Manual Scheduler Error:', err);
+    }
+  });
+
+  logger.info('Manual post scheduler started (checking every minute)');
+  return job;
+}
+
+module.exports = { startScheduler, startManualPostScheduler };

@@ -6,7 +6,7 @@ const db = require('./db');
 const { createTelegramBot } = require('./services/telegram');
 const linkedin = require('./services/linkedin');
 const ai = require('./services/ai');
-const { startScheduler } = require('./services/scheduler');
+const { startScheduler, startManualPostScheduler } = require('./services/scheduler');
 const axios = require('axios');
 
 async function main() {
@@ -215,8 +215,10 @@ async function main() {
 
   // 4. Start scheduler (only on production, not dev server)
   let scheduler = null;
+  let manualScheduler = null;
   if (!isDevServer) {
     scheduler = startScheduler(triggerWorkflowForUser);
+    manualScheduler = startManualPostScheduler();
   } else {
     logger.info('⏭️  Scheduler skipped (dev server mode)');
   }
@@ -252,6 +254,7 @@ async function main() {
     if (keepAliveInterval) clearInterval(keepAliveInterval);
     if (!isDevServer && bot && !config.telegram.useWebhook) bot.stopPolling();
     if (scheduler) scheduler.stop();
+    if (manualScheduler) manualScheduler.stop();
     await db.closeDatabase();
     process.exit(0);
   };

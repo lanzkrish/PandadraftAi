@@ -25,6 +25,11 @@ const config = {
     apiKey: process.env.GEMINI_API_KEY,
   },
 
+  // Local LLM Fallback
+  localLlm: {
+    url: process.env.LOCAL_LLM_URL || 'http://127.0.0.1:11434',
+  },
+
   // LinkedIn OAuth (app-level credentials — shared for all users)
   linkedin: {
     clientId: process.env.LINKEDIN_CLIENT_ID,

@@ -8,6 +8,7 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(!isDemo);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLinkedInConnected, setIsLinkedInConnected] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -62,11 +63,25 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
   useEffect(() => {
     if (isDemo) return;
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+    
+    // Fetch user settings
     fetch(`${apiUrl}/api/dashboard/settings`, { credentials: "include" })
       .then(res => res.json())
       .then(json => {
         setUser(json);
-        setLoading(false);
+        
+        // Fetch LinkedIn status
+        if (json._id) {
+          fetch(`${apiUrl}/auth/status?user=${json._id}`)
+            .then(res => res.json())
+            .then(statusData => {
+              setIsLinkedInConnected(!!statusData.authorized);
+            })
+            .catch(err => console.error("Failed to fetch LinkedIn status", err))
+            .finally(() => setLoading(false));
+        } else {
+          setLoading(false);
+        }
       })
       .catch(err => {
         console.error("Failed to fetch settings", err);
@@ -124,21 +139,7 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
           <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2 tracking-tight">Settings</h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant">Manage your account settings and preferences.</p>
         </div>
-        {/* Desktop Top Actions (Mirrors TopNavBar functionality) */}
-        <div className="hidden md:flex items-center gap-4">
-          <button className="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant">
-            <span className="material-symbols-outlined">search</span>
-          </button>
-          <button className="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant relative">
-            <span className="material-symbols-outlined">notifications</span>
-            <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full ring-2 ring-background"></span>
-          </button>
-          <img 
-            alt="User profile" 
-            className="w-10 h-10 rounded-full border border-outline-variant/30 cursor-pointer object-cover" 
-            src={displayUser.avatar_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuB6Li-aOZ57ZCGo3u9pOc0KogMji2Y-bF_nuIAPHXJkVSEd8yeviyEmD-BxO1R-1i3yGmbQVEsiCT1CWGLaNwK2N0wFs4clDFSqmVpP_nCMpspmhS8mKvTnRdQ1HTBDfU12kgDc701PMlMVpPmsdtDBBpxwl3iMQwtfneRc1kuQRz-IcDPsECFv_tdeDxBlh6OFvD1QgG62uZ1ox1XoPBjml_6PCAd-HdXL-GG4JVNNPvNAnuW_A0N8O1hMyEbZZIoOKJ_YgNZ0zgQ"} 
-          />
-        </div>
+
       </header>
 
       <div className="flex flex-col lg:flex-row gap-12">
@@ -327,14 +328,34 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
                 </div>
               </div>
               <div className="flex items-center gap-4 border-t md:border-t-0 border-outline-variant/30 pt-4 md:pt-0">
-                <div className="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant/50">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34C759] opacity-40"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#34C759]"></span>
-                  </span>
-                  <span className="font-label-md text-[11px] uppercase tracking-wider text-on-surface-variant font-medium">Active</span>
-                </div>
-                <button className="px-4 py-2 bg-white border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors shadow-sm">Disconnect</button>
+                {isLinkedInConnected ? (
+                  <>
+                    <div className="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant/50">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34C759] opacity-40"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#34C759]"></span>
+                      </span>
+                      <span className="font-label-md text-[11px] uppercase tracking-wider text-on-surface-variant font-medium">Active</span>
+                    </div>
+                    {/* Disconnect is not implemented yet, just visual */}
+                    <button className="px-4 py-2 bg-white border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors shadow-sm">Disconnect</button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant/50">
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span>
+                      <span className="font-label-md text-[11px] uppercase tracking-wider text-on-surface-variant font-medium">Disconnected</span>
+                    </div>
+                    <a 
+                      href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005"}/auth/linkedin?user=${user?._id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-[#0A66C2] text-white rounded-lg font-label-md text-label-md hover:bg-[#004182] transition-colors shadow-sm"
+                    >
+                      Connect
+                    </a>
+                  </>
+                )}
               </div>
             </div>
           </section>

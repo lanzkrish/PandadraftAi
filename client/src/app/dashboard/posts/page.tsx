@@ -1,5 +1,5 @@
-import { PostsView } from "@/components/dashboard/PostsView";
+import { PostLibraryView } from "@/components/dashboard/PostLibraryView";
 
-export default function PostsPage() {
-  return <PostsView isDemo={false} />;
+export default function PostsLibraryPage() {
+  return <PostLibraryView />;
 }

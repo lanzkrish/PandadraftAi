@@ -7,7 +7,7 @@ import { TopNav } from "./TopNav";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isFullScreenPage = pathname === "/dashboard/calendar" || pathname === "/dashboard/generator" || pathname === "/dashboard/posts";
+  const isFullScreenPage = pathname === "/dashboard/calendar" || pathname === "/dashboard/generator" || pathname === "/dashboard/posts" || pathname === "/dashboard/write";
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">

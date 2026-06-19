@@ -4,6 +4,8 @@ const { requireAuth } = require('../utils/auth');
 const User = require('../models/User');
 const PostHistory = require('../models/PostHistory');
 const logger = require('../utils/logger');
+const ai = require('../services/ai');
+const linkedin = require('../services/linkedin');
 
 // GET /api/dashboard/overview
 router.get('/overview', requireAuth, async (req, res) => {
@@ -125,6 +127,166 @@ router.post('/upload-avatar', requireAuth, upload.single('avatar'), async (req, 
     res.json({ success: true, avatarUrl, avatarLastChanged: user.avatar_last_changed });
   } catch (error) {
     logger.error('Upload Avatar Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// POST /api/dashboard/generate/post
+router.post('/generate/post', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { topic, goal, audiences, tone } = req.body;
+    
+    if (!topic) {
+      return res.status(400).json({ error: 'Topic is required' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (user.credits <= 0) {
+      return res.status(402).json({ error: 'Insufficient credits. Please upgrade your plan.' });
+    }
+
+    // Build comprehensive topic context
+    let fullTopic = topic;
+    if (goal) fullTopic += ` | Goal: ${goal}`;
+    if (audiences && audiences.length > 0) fullTopic += ` | Target Audience: ${audiences.join(', ')}`;
+
+    const contentTone = tone || user.content_tone || 'professional';
+    const isOrgPost = Boolean(user.linkedin_org_id);
+    const userContext = { name: user.name, profession: user.profession, domain: user.domain };
+    const audiencesStr = audiences && audiences.length > 0 ? audiences.join(', ') : '';
+
+    // Generate Full Post directly (1-step)
+    const postContent = await ai.generatePost(topic, contentTone, goal, audiencesStr, isOrgPost, userContext);
+    
+    // Extract a basic hook from the first line for UI display purposes
+    const lines = postContent.split('\n').filter(l => l.trim() !== '');
+    const hook = lines[0] || 'Generated Post';
+
+    // 3. Deduct credit
+    user.credits -= 1;
+    await user.save();
+
+    // 4. Save to history as draft
+    const post = await PostHistory.create({
+      user_id: userId,
+      topic: fullTopic,
+      idea: hook,
+      post_content: postContent,
+      status: 'drafted'
+    });
+
+    res.json({
+      success: true,
+      variation: {
+        hook: hook,
+        description: 'Auto-generated single post',
+        postContent: postContent
+      },
+      historyId: post._id,
+      creditsRemaining: user.credits
+    });
+  } catch (error) {
+    logger.error('Generate Post Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// PUT /api/dashboard/posts/:id/schedule
+router.put('/posts/:id/schedule', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+    const { scheduledFor } = req.body;
+
+    if (!scheduledFor) {
+      return res.status(400).json({ error: 'scheduledFor date is required' });
+    }
+
+    const post = await PostHistory.findOne({ _id: postId, user_id: userId });
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (post.status === 'posted') {
+      return res.status(400).json({ error: 'Post is already published' });
+    }
+
+    post.status = 'scheduled';
+    post.scheduled_for = new Date(scheduledFor);
+    await post.save();
+
+    res.json({ success: true, post });
+  } catch (error) {
+    logger.error('Schedule Post Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// POST /api/dashboard/posts/:id/publish
+router.post('/posts/:id/publish', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+
+    const post = await PostHistory.findOne({ _id: postId, user_id: userId });
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (post.status === 'posted') {
+      return res.status(400).json({ error: 'Post is already published' });
+    }
+
+    const result = await linkedin.createPost(userId, post.post_content);
+    
+    post.status = 'posted';
+    post.linkedin_post_id = result.postId;
+    await post.save();
+
+    res.json({ success: true, post, result });
+  } catch (error) {
+    logger.error('Publish Post Error:', error);
+    await PostHistory.updateOne({ _id: req.params.id }, { status: 'failed' });
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// GET /api/dashboard/posts
+router.get('/posts', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const posts = await PostHistory.find({ user_id: userId }).sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (error) {
+    logger.error('Fetch Posts Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// POST /api/dashboard/posts (Manual creation)
+router.post('/posts', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { title, content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ error: 'Post content is required' });
+    }
+
+    const post = await PostHistory.create({
+      user_id: userId,
+      topic: title || 'Manual Draft',
+      idea: title || 'Manual Draft',
+      post_content: content,
+      status: 'drafted'
+    });
+
+    res.json({ success: true, post });
+  } catch (error) {
+    logger.error('Create Post Error:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });

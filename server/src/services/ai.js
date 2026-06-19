@@ -138,21 +138,43 @@ async function callWithRetry(prompt, maxRetries = 3) {
         const result = await model.generateContent(prompt);
         return result.response.text().trim();
       } catch (error) {
-        const is429 = error.message?.includes('429') || error.message?.includes('quota');
-        if (is429 && attempt < maxRetries) {
+        const isTransient = error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('503');
+        if (isTransient && attempt < maxRetries) {
           const delay = Math.pow(2, attempt) * 1000;
-          logger.warn(`Rate limited (${modelName}), retrying in ${delay / 1000}s...`);
+          logger.warn(`Transient error (${modelName}), retrying in ${delay / 1000}s...`);
           await new Promise((r) => setTimeout(r, delay));
-        } else if (is429) {
-          logger.warn(`All retries exhausted for ${modelName}, trying next model...`);
-          break;
         } else {
-          throw error;
+          logger.warn(`Failed with ${modelName}: ${error.message}, trying next model...`);
+          break;
         }
       }
     }
   }
-  throw new Error('All AI models rate-limited. Please try again later.');
+
+  logger.warn(`All Gemini models failed. Falling back to local LLM at ${config.localLlm.url}...`);
+  try {
+    const axios = require('axios');
+    const tagsResponse = await axios.get(`${config.localLlm.url}/api/tags`);
+    const localModels = tagsResponse.data.models;
+    if (!localModels || localModels.length === 0) {
+      throw new Error('No local models available on Ollama.');
+    }
+    const fallbackModel = localModels[0].name;
+    logger.info(`Using local fallback model: ${fallbackModel}`);
+
+    const response = await axios.post(`${config.localLlm.url}/api/generate`, {
+      model: fallbackModel,
+      prompt: prompt,
+      stream: false
+    });
+    
+    // Some models wrap JSON in markdown blocks even when asked not to, 
+    // but the prompt explicitly handles it.
+    return response.data.response.trim();
+  } catch (localError) {
+    logger.error('Local LLM fallback failed:', localError.message);
+    throw new Error('All AI models (including local fallback) failed. Please try again later.');
+  }
 }
 
 /**
@@ -262,55 +284,9 @@ Return ONLY a JSON array of 5 strings, no markdown formatting, no code blocks. E
 }
 
 /**
- * Generate 3 post ideas for a selected topic
- * Each idea includes a hook, description, and recommended format
+ * Generate a full LinkedIn post directly from a topic, optimized for maximum impressions
  */
-async function generateIdeas(topic, tone = 'professional', isOrgPost = false) {
-  const toneDesc = getToneDesc(tone);
-  const voiceRule = isOrgPost
-    ? `\n- Write from an ORGANIZATION perspective (use "we", "our company", "our team")\n- Focus on industry insights, data, trends, and company achievements\n- Do NOT include personal stories, personal anecdotes, or first-person singular experiences\n- All content must be factual and professional`
-    : '';
-
-  const prompt = `You are a LinkedIn growth strategist. For the topic "${topic}", generate exactly 3 unique post ideas that would get 10K+ impressions on LinkedIn.
-
-LinkedIn's algorithm favors posts that get comments in the first 30 minutes. Each idea must be designed to trigger responses.
-
-Each idea should include:
-- "hook": A scroll-stopping first line (this is the MOST important part — it determines if anyone reads the post)
-  * Use one of these proven patterns: curiosity gap, contrarian opinion, surprising mistake, bold statistic, or relatable frustration
-  * Keep it under 15 words
-  * It should create TENSION that the reader needs to resolve
-- "description": What the post will cover and why it will drive engagement (2-3 sentences)
-- "format": The recommended post format — one of: "list" (bullet-point tips), "story" (narrative arc), "hot-take" (opinion-driven), "framework" (step-by-step method)
-
-The tone should be ${toneDesc}.
-${voiceRule}
-${NO_TEMPLATE_RULE}
-
-Return ONLY a JSON array of 3 objects with "hook", "description", and "format" keys, no markdown formatting, no code blocks. Example:
-[{"hook": "Hook text here...", "description": "Description here...", "format": "story"}, ...]`;
-
-  try {
-    const text = await callWithRetry(prompt);
-    const cleaned = text.replace(/\`\`\`(?:json)?\n?/g, '').trim();
-    const ideas = JSON.parse(cleaned);
-
-    if (!Array.isArray(ideas) || ideas.length === 0) {
-      throw new Error('Invalid ideas format from AI');
-    }
-
-    logger.info(`Generated ${ideas.length} ideas for topic: ${topic}`);
-    return ideas.slice(0, 3);
-  } catch (error) {
-    logger.error('Failed to generate ideas:', error);
-    throw error;
-  }
-}
-
-/**
- * Generate a full LinkedIn post optimized for maximum impressions
- */
-async function generatePost(idea, tone = 'professional', isOrgPost = false, userContext = null) {
+async function generatePost(topic, tone = 'professional', goal = 'Drive Engagement', audiences = '', isOrgPost = false, userContext = null) {
   const toneDesc = getToneDesc(tone);
   const userContextPrompt = buildUserContextPrompt(userContext);
 
@@ -325,19 +301,13 @@ async function generatePost(idea, tone = 'professional', isOrgPost = false, user
 - Focus on company insights, industry analysis, research findings, and thought leadership
 - You may reference company achievements, team efforts, or industry milestones`;
 
-  const formatGuidance = idea.format ? `\nThe recommended format for this post is "${idea.format}":
-${idea.format === 'list' ? '- Structure the value section as clear, actionable bullet points with "→" markers' : ''}
-${idea.format === 'story' ? '- Tell a short narrative: situation → challenge → what happened → lesson learned' : ''}
-${idea.format === 'hot-take' ? '- Lead with a bold, contrarian opinion. Back it up with 3-4 sharp reasons.' : ''}
-${idea.format === 'framework' ? '- Present a clear, named framework or step-by-step method the reader can apply today' : ''}` : '';
-
   const prompt = `You are a LinkedIn content creator who consistently generates posts with 10K+ impressions. You deeply understand LinkedIn's distribution algorithm.
 
-Create a LinkedIn post based on this idea:
+Write a highly engaging, viral-ready LinkedIn post about the following topic: "${topic}"
 
-Hook: ${idea.hook}
-Description: ${idea.description}
-${formatGuidance}
+Primary Goal: ${goal}
+Target Audience: ${audiences}
+
 ${LINKEDIN_ALGORITHM_RULES}
 ${MANDATORY_POST_STRUCTURE}
 ${POST_FORMAT_RULES}
@@ -375,10 +345,10 @@ Return ONLY the post text, nothing else. No explanations, no labels, no commenta
 
   try {
     const post = await callWithRetry(prompt);
-    logger.info(`Generated post (${post.split(/\s+/).length} words)`);
+    logger.info(`Generated direct post (${post.split(/\\s+/).length} words) for topic: ${topic}`);
     return post;
   } catch (error) {
-    logger.error('Failed to generate post:', error);
+    logger.error('Failed to generate direct post:', error);
     throw error;
   }
 }
@@ -438,7 +408,6 @@ Return ONLY the revised post text, nothing else.`;
 module.exports = {
   generateTopics,
   generateTopicsFromKeyword,
-  generateIdeas,
   generatePost,
   revisePost,
 };

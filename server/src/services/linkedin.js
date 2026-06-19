@@ -66,7 +66,7 @@ async function exchangeCodeForTokens(userId, code) {
     logger.info(`LinkedIn tokens obtained for user ${userId}`);
     return tokenData;
   } catch (error) {
-    logger.error(`Failed to exchange code for user ${userId}:`, error.response?.data || error.message);
+    logger.error(`Failed to exchange code for user ${userId}: ${JSON.stringify(error.response?.data) || error.message}`);
     throw error;
   }
 }
@@ -103,7 +103,7 @@ async function refreshAccessToken(userId) {
     logger.info(`LinkedIn tokens refreshed for user ${userId}`);
     return tokenData;
   } catch (error) {
-    logger.error(`Failed to refresh token for user ${userId}:`, error.response?.data || error.message);
+    logger.error(`Failed to refresh token for user ${userId}: ${JSON.stringify(error.response?.data) || error.message}`);
     throw error;
   }
 }
@@ -136,7 +136,7 @@ async function getProfile(userId) {
     });
     return response.data;
   } catch (error) {
-    logger.error(`Failed to fetch LinkedIn profile for user ${userId}:`, error.response?.data || error.message);
+    logger.error(`Failed to fetch LinkedIn profile for user ${userId}: ${JSON.stringify(error.response?.data) || error.message}`);
     throw error;
   }
 }
@@ -189,7 +189,7 @@ async function createPost(userId, text) {
     logger.info(`LinkedIn post for user ${userId} on ${postTarget}! ID: ${postId}`);
     return { success: true, postId, target: postTarget };
   } catch (error) {
-    logger.error(`Failed to create LinkedIn post for user ${userId}:`, error.response?.data || error.message);
+    logger.error(`Failed to create LinkedIn post for user ${userId}: ${JSON.stringify(error.response?.data) || error.message}`);
     throw error;
   }
 }
@@ -236,7 +236,12 @@ function setupOAuthRoutes(app) {
       res.send(`
         <html><body style="font-family:system-ui;padding:40px;text-align:center;">
           <h1>✅ LinkedIn Connected!</h1>
-          <p>Go back to Telegram and use /generate to create your first post!</p>
+          <p>You can now close this tab and go back to your PandaDraft dashboard to schedule your posts.</p>
+          <script>
+            setTimeout(() => {
+              window.close();
+            }, 3000);
+          </script>
         </body></html>
       `);
     } catch (err) {

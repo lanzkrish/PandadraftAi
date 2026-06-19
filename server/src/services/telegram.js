@@ -243,7 +243,7 @@ function createTelegramBot(app, options = {}) {
       logger.info(`Telegram webhook set: ${config.appUrl}/bot<TOKEN>`);
     }).catch((err) => logger.error('Webhook failed:', err.message));
   } else {
-    bot = new TelegramBot(config.telegram.botToken, { polling: true });
+    bot = new TelegramBot(config.telegram.botToken, { polling: false }); // Polling stopped temporarily per user request
   }
 
   function isAdmin(chatId) { return String(chatId) === String(adminChatId); }
