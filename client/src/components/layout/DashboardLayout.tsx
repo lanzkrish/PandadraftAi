@@ -1,18 +1,28 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import { SideNav } from "./SideNav";
 import { TopNav } from "./TopNav";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isFullScreenPage = pathname === "/dashboard/calendar" || pathname === "/dashboard/generator" || pathname === "/dashboard/posts" || pathname === "/dashboard/write";
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      <TopNav />
-      <SideNav />
+    <div className="min-h-screen flex flex-col md:flex-row relative">
+      <TopNav isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+      <SideNav isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+      
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+      
       <main 
         className={`flex-grow md:ml-64 relative z-10 ${
           isFullScreenPage 

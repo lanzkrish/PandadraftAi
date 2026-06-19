@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Logo } from "../brand/Logo";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 
-export function TopNav() {
+export function TopNav({ isMobileMenuOpen, setIsMobileMenuOpen }: { isMobileMenuOpen?: boolean, setIsMobileMenuOpen?: (open: boolean) => void }) {
   const router = useRouter();
   const pathname = usePathname();
   const isDemo = pathname.startsWith("/demo");
@@ -51,9 +50,14 @@ export function TopNav() {
   };
 
   return (
-    <nav className="glass-nav fixed top-0 right-0 left-0 md:left-64 flex justify-between items-center px-6 h-16 z-30 border-b border-outline-variant/20 bg-surface/80 backdrop-blur-md">
-      <div className="md:hidden flex-grow">
-        <Logo />
+    <nav className="glass-nav fixed top-0 right-0 left-0 md:left-64 flex justify-between items-center px-4 md:px-6 h-16 z-30 border-b border-outline-variant/20 bg-surface/80 backdrop-blur-md">
+      <div className="md:hidden flex items-center">
+        <button 
+          onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 -ml-2 text-on-surface hover:bg-surface-container-low rounded-full transition-colors"
+        >
+          <span className="material-symbols-outlined text-[24px]">menu</span>
+        </button>
       </div>
       <div className="hidden md:block flex-grow"></div>
 

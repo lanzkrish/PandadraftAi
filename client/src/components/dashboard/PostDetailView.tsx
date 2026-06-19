@@ -183,17 +183,19 @@ export function PostDetailView({ postId }: { postId: string }) {
       <div className="w-full max-w-[744px] mb-4 flex justify-between items-center">
         <Link href="/dashboard/posts" className="flex items-center gap-1 text-on-surface-variant hover:text-on-surface transition-colors font-medium">
           <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-          Back to Library
+          <span className="hidden sm:inline">Back to Library</span>
+          <span className="sm:hidden">Back</span>
         </Link>
         {isPosted && post.linkedin_post_id && (
           <a 
             href={`https://www.linkedin.com/feed/update/${post.linkedin_post_id}`} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-[#0a66c2] text-white px-4 py-1.5 rounded-full font-label-md text-label-md hover:bg-[#004182] transition-colors"
+            className="flex items-center gap-1 md:gap-2 bg-[#0a66c2] text-white px-3 md:px-4 py-1.5 rounded-full font-label-sm md:font-label-md text-label-sm md:text-label-md hover:bg-[#004182] transition-colors whitespace-nowrap"
           >
-            <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-            View on LinkedIn
+            <span className="material-symbols-outlined text-[16px] md:text-[18px]">open_in_new</span>
+            <span className="hidden sm:inline">View on LinkedIn</span>
+            <span className="sm:hidden">View</span>
           </a>
         )}
       </div>
@@ -272,14 +274,14 @@ export function PostDetailView({ postId }: { postId: string }) {
 
         {/* Bottom Actions Row */}
         {!isPosted && (
-          <div className="flex justify-end items-center px-6 py-3 mt-auto border-t border-outline-variant/10">
-            <div className="flex items-center gap-3">
+          <div className="flex justify-end items-center px-4 md:px-6 py-3 mt-auto border-t border-outline-variant/10">
+            <div className="flex items-center gap-1 md:gap-3 flex-wrap justify-end">
               <button
                 onClick={handleSave}
                 disabled={isSaving || postContent === post.post_content}
-                className="px-4 py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50 transition-colors"
+                className="px-2 md:px-4 py-2 rounded-full font-label-md text-label-sm md:text-label-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50 transition-colors"
               >
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? "Saving..." : "Save"}
               </button>
 
               <div className="relative">
@@ -323,7 +325,7 @@ export function PostDetailView({ postId }: { postId: string }) {
               <button 
                 onClick={handlePostNow}
                 disabled={isPosting || !postContent.trim()}
-                className="px-6 py-2 rounded-full font-label-md text-label-md font-semibold bg-[#0a66c2] text-white hover:bg-[#004182] disabled:bg-surface-container-highest disabled:text-outline-variant transition-colors"
+                className="px-4 md:px-6 py-2 rounded-full font-label-md text-label-sm md:text-label-md font-semibold bg-[#0a66c2] text-white hover:bg-[#004182] disabled:bg-surface-container-highest disabled:text-outline-variant transition-colors"
               >
                 {isPosting ? "Posting..." : "Post Now"}
               </button>
