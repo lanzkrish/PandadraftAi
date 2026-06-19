@@ -18,7 +18,7 @@ export function TopNav() {
 
   useEffect(() => {
     if (isDemo) return;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+    const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
     fetch(`${apiUrl}/api/auth/me`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
@@ -39,7 +39,7 @@ export function TopNav() {
 
   const handleLogout = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       await fetch(`${apiUrl}/api/auth/logout`, {
         method: "POST",
         credentials: "include"

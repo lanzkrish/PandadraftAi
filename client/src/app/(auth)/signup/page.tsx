@@ -21,7 +21,7 @@ function SignupForm() {
     setLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

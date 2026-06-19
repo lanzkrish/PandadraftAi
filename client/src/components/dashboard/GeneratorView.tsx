@@ -38,7 +38,7 @@ export function GeneratorView({ isDemo = false }: { isDemo?: boolean }) {
     setGeneratedResult(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/dashboard/generate/post`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,7 +67,7 @@ export function GeneratorView({ isDemo = false }: { isDemo?: boolean }) {
     setIsPublishing(true);
     setError("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/dashboard/posts/${historyId}/publish`, {
         method: "POST",
         credentials: "include"
@@ -87,7 +87,7 @@ export function GeneratorView({ isDemo = false }: { isDemo?: boolean }) {
     setIsPublishing(true);
     setError("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/dashboard/posts/${historyId}/schedule`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

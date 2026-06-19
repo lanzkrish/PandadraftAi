@@ -20,7 +20,7 @@ export function SubscribeView({ isDemo = false }: { isDemo?: boolean }) {
 
   const fetchUser = () => {
     if (isDemo) return;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+    const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
     fetch(`${apiUrl}/api/auth/me`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
@@ -59,7 +59,7 @@ export function SubscribeView({ isDemo = false }: { isDemo?: boolean }) {
 
     try {
       // 1. Create order
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/billing/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -34,7 +34,7 @@ function CheckoutForm() {
 
     try {
       // 1. Create order on the server
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/billing/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

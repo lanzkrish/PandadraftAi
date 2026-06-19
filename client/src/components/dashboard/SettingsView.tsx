@@ -37,7 +37,7 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
     formData.append("avatar", selectedFile);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/dashboard/upload-avatar`, {
         method: "POST",
         credentials: "include",
@@ -62,7 +62,7 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
 
   useEffect(() => {
     if (isDemo) return;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+    const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
     
     // Fetch user settings
     fetch(`${apiUrl}/api/dashboard/settings`, { credentials: "include" })
@@ -98,7 +98,7 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
     if (isDemo) return;
     setIsSaving(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/dashboard/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -347,7 +347,7 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
                       <span className="font-label-md text-[11px] uppercase tracking-wider text-on-surface-variant font-medium">Disconnected</span>
                     </div>
                     <a 
-                      href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005"}/auth/linkedin?user=${user?._id}`}
+                      href={`${"" /* Proxy rewrite in next.config.ts handles backend routing */}/auth/linkedin?user=${user?._id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-4 py-2 bg-[#0A66C2] text-white rounded-lg font-label-md text-label-md hover:bg-[#004182] transition-colors shadow-sm"

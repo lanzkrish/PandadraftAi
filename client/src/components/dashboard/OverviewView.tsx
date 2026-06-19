@@ -12,7 +12,7 @@ export function OverviewView({ isDemo = false }: { isDemo?: boolean }) {
 
   useEffect(() => {
     if (isDemo) return;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+    const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
     fetch(`${apiUrl}/api/dashboard/overview`, { credentials: "include" })
       .then(res => res.json())
       .then(json => {

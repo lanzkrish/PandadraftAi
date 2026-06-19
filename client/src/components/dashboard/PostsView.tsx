@@ -15,7 +15,7 @@ export function PostsView({ isDemo = false }: { isDemo?: boolean }) {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+    const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
     fetch(`${apiUrl}/api/dashboard/settings`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => setUser(data))
@@ -35,7 +35,7 @@ export function PostsView({ isDemo = false }: { isDemo?: boolean }) {
     const lines = postContent.split('\n').filter(l => l.trim() !== '');
     const title = lines[0] || 'Manual Draft';
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+    const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
     const res = await fetch(`${apiUrl}/api/dashboard/posts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -55,7 +55,7 @@ export function PostsView({ isDemo = false }: { isDemo?: boolean }) {
     try {
       setIsPosting(true);
       const id = await saveDraft();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/dashboard/posts/${id}/publish`, {
         method: "POST",
         credentials: "include"
@@ -77,7 +77,7 @@ export function PostsView({ isDemo = false }: { isDemo?: boolean }) {
     try {
       setIsScheduling(true);
       const id = await saveDraft();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5005";
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
       const res = await fetch(`${apiUrl}/api/dashboard/posts/${id}/schedule`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
