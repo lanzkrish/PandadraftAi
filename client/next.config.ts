@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
           ? 'http://localhost:5005/api/:path*' 
           : 'https://autodraftai.onrender.com/api/:path*',
       },
+      {
+        source: '/auth/:path*',
+        destination: process.env.NODE_ENV === 'development' 
+          ? 'http://localhost:5005/auth/:path*' 
+          : 'https://autodraftai.onrender.com/auth/:path*',
+      },
     ];
   },
 };
