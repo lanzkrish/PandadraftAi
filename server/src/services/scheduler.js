@@ -78,16 +78,26 @@ function startManualPostScheduler() {
       logger.info(`Manual Scheduler: Found ${duePosts.length} posts due for publishing.`);
 
       for (const post of duePosts) {
+        // Atomically lock the post to prevent race conditions (e.g., if scheduler runs multiple times concurrently)
+        const updatedPost = await PostHistory.findOneAndUpdate(
+          { _id: post._id, status: 'scheduled' },
+          { $set: { status: 'processing' } },
+          { new: true }
+        );
+
+        // If it's no longer scheduled, another process grabbed it first
+        if (!updatedPost) continue;
+
         try {
-          const result = await linkedin.createPost(post.user_id, post.post_content);
-          post.status = 'posted';
-          post.linkedin_post_id = result.postId;
-          await post.save();
-          logger.info(`Successfully published scheduled post ${post._id}`);
+          const result = await linkedin.createPost(updatedPost.user_id, updatedPost.post_content);
+          updatedPost.status = 'posted';
+          updatedPost.linkedin_post_id = result.postId;
+          await updatedPost.save();
+          logger.info(`Successfully published scheduled post ${updatedPost._id}`);
         } catch (error) {
-          logger.error(`Failed to publish scheduled post ${post._id}: ${error.message}`);
-          post.status = 'failed';
-          await post.save();
+          logger.error(`Failed to publish scheduled post ${updatedPost._id}: ${error.message}`);
+          updatedPost.status = 'failed';
+          await updatedPost.save();
         }
       }
     } catch (err) {

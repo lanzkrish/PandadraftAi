@@ -40,14 +40,16 @@ export function PostLibraryView() {
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto bg-surface-container-low p-6 lg:p-gutter">
       <div className="max-w-5xl mx-auto w-full pb-24">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h1 className="font-headline-lg text-headline-lg text-on-surface">Content Library</h1>
             <p className="text-on-surface-variant font-body-md mt-1">Your history of generated and scheduled posts.</p>
           </div>
-          <button className="bg-primary text-white px-4 py-2 rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm hover:opacity-90">
-            <span className="material-symbols-outlined text-[18px]">add</span> New Post
-          </button>
+          <Link href="/dashboard/posts">
+            <button className="bg-primary text-white px-4 py-2 rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm hover:opacity-90 whitespace-nowrap">
+              <span className="material-symbols-outlined text-[18px]">add</span> New Post
+            </button>
+          </Link>
         </div>
 
         {loading ? (
@@ -66,7 +68,7 @@ export function PostLibraryView() {
               <article key={post._id} className="bg-white p-6 rounded-xl border border-outline-variant/20 hover:shadow-md transition-shadow flex flex-col gap-4">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
                       {getStatusBadge(post.status)}
                       <span className="text-body-sm text-on-surface-variant">
                         Created: {new Date(post.createdAt).toLocaleDateString()}

@@ -129,7 +129,7 @@ export function OverviewView({ isDemo = false }: { isDemo?: boolean }) {
                     <div className="w-12 h-12 rounded-lg bg-surface flex items-center justify-center flex-shrink-0">
                       <span className="material-symbols-outlined text-primary">edit_document</span>
                     </div>
-                    <div className="flex-grow">
+                    <div className="flex-grow min-w-0">
                       <h4 className="font-body-lg text-body-lg font-medium text-on-surface truncate">{post.topic}</h4>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="glass">LinkedIn</Badge>

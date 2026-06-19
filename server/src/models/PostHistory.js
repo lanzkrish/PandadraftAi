@@ -6,7 +6,7 @@ const postHistorySchema = new mongoose.Schema({
   idea: { type: String },
   post_content: { type: String },
   linkedin_post_id: { type: String, default: null },
-  status: { type: String, default: 'drafted', enum: ['drafted', 'approved', 'posted', 'failed', 'scheduled'] },
+  status: { type: String, default: 'drafted', enum: ['drafted', 'approved', 'posted', 'failed', 'scheduled', 'processing'] },
   scheduled_for: { type: Date, default: null },
 }, { timestamps: true });
 

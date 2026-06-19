@@ -17,7 +17,7 @@ const navItems = [
   { name: "Settings", href: "/dashboard/settings", icon: "settings" },
 ];
 
-export function SideNav() {
+export function SideNav({ isMobileMenuOpen, setIsMobileMenuOpen }: { isMobileMenuOpen?: boolean, setIsMobileMenuOpen?: (open: boolean) => void }) {
   const pathname = usePathname();
   const isDemo = pathname.startsWith("/demo");
   const basePath = isDemo ? "/demo/dashboard" : "/dashboard";
@@ -28,7 +28,7 @@ export function SideNav() {
   }));
 
   return (
-    <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 glass-panel border-l-0 border-t-0 border-b-0 flex-col p-4 gap-2 z-40">
+    <aside className={`fixed left-0 top-0 h-full w-64 glass-panel bg-surface md:bg-transparent border-l-0 border-t-0 border-b-0 flex flex-col p-4 gap-2 z-40 transition-transform duration-300 ease-in-out md:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
       <div className="flex flex-col gap-1 mb-8 px-2 mt-4">
         <Logo />
         <span className="font-label-md text-label-md text-on-surface-variant mt-2 ml-1">
@@ -47,6 +47,7 @@ export function SideNav() {
                   ? "glass-card text-primary font-bold shadow-sm"
                   : "text-on-surface-variant hover:bg-white/30 dark:hover:bg-white/5 hover:translate-x-1"
               }`}
+              onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(false)}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
               {item.name}

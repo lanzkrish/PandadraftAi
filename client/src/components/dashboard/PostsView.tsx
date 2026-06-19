@@ -148,9 +148,9 @@ export function PostsView({ isDemo = false }: { isDemo?: boolean }) {
         )}
 
         {/* Bottom Actions Row */}
-        <div className="flex justify-end items-center px-6 py-3 mt-auto">
+        <div className="flex justify-end items-center px-4 md:px-6 py-3 mt-auto">
           {/* Post/Schedule actions right side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 md:gap-3 flex-wrap justify-end">
             <div className="relative">
               <button 
                 onClick={() => setShowScheduleModal(!showScheduleModal)}
@@ -192,7 +192,7 @@ export function PostsView({ isDemo = false }: { isDemo?: boolean }) {
             <button 
               onClick={handlePostNow}
               disabled={isPosting || !postContent.trim()}
-              className="px-6 py-2 rounded-full font-label-md text-label-md font-semibold bg-[#0a66c2] text-white hover:bg-[#004182] disabled:bg-surface-container-highest disabled:text-outline-variant transition-colors"
+              className="px-4 md:px-6 py-2 rounded-full font-label-md text-label-sm md:text-label-md font-semibold bg-[#0a66c2] text-white hover:bg-[#004182] disabled:bg-surface-container-highest disabled:text-outline-variant transition-colors"
             >
               {isPosting ? "Posting..." : "Post"}
             </button>

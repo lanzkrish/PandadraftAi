@@ -12,14 +12,14 @@ export default function LandingPage() {
       <div className="absolute top-[40%] left-[50%] w-[30%] h-[30%] rounded-full bg-secondary/10 blur-[100px] -z-10 -translate-x-1/2"></div>
 
       {/* Header */}
-      <header className="glass-nav px-8 py-4 flex justify-between items-center w-full">
-        <Logo />
-        <div className="flex gap-4 items-center">
-          <Link href="/demo" className="text-on-surface-variant hover:text-tertiary font-label-md font-medium transition-colors">
+      <header className="glass-nav px-4 sm:px-8 py-4 flex justify-between items-center w-full gap-2">
+        <Logo className="shrink-0" />
+        <div className="flex gap-2 sm:gap-4 items-center shrink-0">
+          <Link href="/demo" className="text-on-surface-variant hover:text-tertiary font-label-md font-medium transition-colors whitespace-nowrap">
             View Demo
           </Link>
           <Link href="/dashboard">
-            <Button variant="primary">Login</Button>
+            <Button variant="primary" className="whitespace-nowrap px-4 py-2 text-sm">Login</Button>
           </Link>
         </div>
       </header>

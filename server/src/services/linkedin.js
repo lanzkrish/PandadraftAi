@@ -185,7 +185,13 @@ async function createPost(userId, text) {
       },
     });
 
-    const postId = response.headers['x-restli-id'];
+    let postId = response.headers['x-restli-id'];
+    
+    // LinkedIn API returns urn:li:share:ID for ugcPosts, but the actual viewable URL requires urn:li:activity:ID
+    if (postId && postId.startsWith('urn:li:share:')) {
+      postId = postId.replace('urn:li:share:', 'urn:li:activity:');
+    }
+
     logger.info(`LinkedIn post for user ${userId} on ${postTarget}! ID: ${postId}`);
     return { success: true, postId, target: postTarget };
   } catch (error) {
