@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { CircularProgress } from "@/components/ui/CircularProgress";
 import Script from "next/script";
+import { useRouter } from "next/navigation";
 
 const PLANS = [
   { name: "Starter", price: 99, credits: "5 Credits", scheduling: "Upto 15 Days", description: "Basic scheduling tools." },
@@ -17,6 +18,7 @@ export function SubscribeView({ isDemo = false }: { isDemo?: boolean }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const router = useRouter();
 
   const fetchUser = () => {
     if (isDemo) return;
@@ -53,82 +55,7 @@ export function SubscribeView({ isDemo = false }: { isDemo?: boolean }) {
       alert("Checkout is disabled in demo mode.");
       return;
     }
-    setIsProcessing(true);
-    setError("");
-    setSuccessMessage("");
-
-    try {
-      // 1. Create order
-      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
-      const res = await fetch(`${apiUrl}/api/billing/create-order`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ plan: planName }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to initiate payment");
-      }
-
-      // 2. Open Razorpay modal
-      const options = {
-        key: data.keyId,
-        amount: data.amount,
-        currency: data.currency,
-        name: "Pandadraft",
-        description: `${planName} Plan Subscription`,
-        image: "https://61c27pvrog.ufs.sh/f/csa5xgP43gu20Ydej7opI3OnUf2APZamuKDqjh75V9FgWecX",
-        order_id: data.orderId,
-        handler: async function (response: any) {
-          setIsProcessing(true);
-          try {
-            // 3. Verify signature
-            const verifyRes = await fetch(`${apiUrl}/api/billing/verify-payment`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
-              }),
-            });
-
-            const verifyData = await verifyRes.json();
-            if (!verifyRes.ok) {
-              throw new Error(verifyData.error || "Verification failed");
-            }
-
-            setSuccessMessage(`Successfully updated subscription to ${planName}!`);
-            setIsProcessing(false);
-            fetchUser(); // Refresh plan info
-          } catch (err: any) {
-            setError(err.message);
-            setIsProcessing(false);
-          }
-        },
-        prefill: {
-          name: user?.name || "",
-          email: user?.email || ""
-        },
-        theme: {
-          color: "#0071E3"
-        },
-        modal: {
-          ondismiss: function () {
-            setIsProcessing(false);
-          }
-        }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-    } catch (err: any) {
-      setError(err.message);
-      setIsProcessing(false);
-    }
+    router.push(`/checkout?plan=${planName}`);
   };
 
   if (loading) {
@@ -189,10 +116,10 @@ export function SubscribeView({ isDemo = false }: { isDemo?: boolean }) {
               <div className="p-5 bg-white rounded-xl border border-outline-variant/50 flex items-center justify-between shadow-sm max-w-md">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-8 bg-surface-container-low rounded border border-outline-variant/50 flex items-center justify-center">
-                    <div className="font-bold text-[10px] text-[#0071E3] italic">VISA</div>
+                    <span className="material-symbols-outlined text-[#0071E3] text-[20px]">credit_card</span>
                   </div>
                   <div>
-                    <p className="font-body-sm text-body-sm text-on-surface font-medium mb-0.5">Visa ending in 4242</p>
+                    <p className="font-body-sm text-body-sm text-on-surface font-medium mb-0.5">{user?.last_payment_method || "None"}</p>
                     <p className="font-label-md text-label-md text-on-surface-variant">Used to purchase {activePlan} plan</p>
                   </div>
                 </div>

@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema({
   linkedin_id: { type: String, unique: true, sparse: true, index: true },
   avatar_url: { type: String, default: null },
   avatar_last_changed: { type: Date, default: null },
+  last_payment_method: { type: String, default: null },
 }, { timestamps: true });
 
 // Ensure null values are completely removed for sparse index fields

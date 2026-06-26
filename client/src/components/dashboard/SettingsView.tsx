@@ -9,6 +9,7 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
   const [loading, setLoading] = useState(!isDemo);
   const [isSaving, setIsSaving] = useState(false);
   const [isLinkedInConnected, setIsLinkedInConnected] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -77,7 +78,15 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
             .then(statusData => {
               setIsLinkedInConnected(!!statusData.authorized);
             })
-            .catch(err => console.error("Failed to fetch LinkedIn status", err))
+            .catch(err => console.error("Failed to fetch LinkedIn status", err));
+
+          // Fetch transactions
+          fetch(`${apiUrl}/api/billing/transactions`, { credentials: "include" })
+            .then(res => res.json())
+            .then(data => {
+              if (Array.isArray(data)) setTransactions(data);
+            })
+            .catch(err => console.error("Failed to fetch transactions", err))
             .finally(() => setLoading(false));
         } else {
           setLoading(false);
@@ -405,20 +414,58 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
                       <div className="p-5 bg-white rounded-xl border border-outline-variant/50 flex items-center justify-between shadow-sm hover:border-outline-variant transition-colors group">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-8 bg-surface-container-low rounded border border-outline-variant/50 flex items-center justify-center relative overflow-hidden">
-                            <div className="font-bold text-[10px] text-[#0071E3] italic">VISA</div>
+                            <span className="material-symbols-outlined text-[#0071E3] text-[20px]">credit_card</span>
                           </div>
                           <div>
-                            <p className="font-body-sm text-body-sm text-on-surface font-medium mb-0.5">Visa ending in 4242</p>
-                            <p className="font-label-md text-label-md text-on-surface-variant">Expires 12/25</p>
+                            <p className="font-body-sm text-body-sm text-on-surface font-medium mb-0.5">{displayUser.last_payment_method || "None"}</p>
+                            <p className="font-label-md text-label-md text-on-surface-variant">Active for current plan</p>
                           </div>
                         </div>
-                        <button className="text-[#0071E3] font-label-md text-label-md hover:underline font-medium px-2 py-1 rounded hover:bg-[#0071E3]/5 transition-colors">Edit</button>
                       </div>
                     </div>
                   )}
                 </div>
               );
             })()}
+
+            {/* Purchase History */}
+            <div className="mt-8 bg-white/80 backdrop-blur-md rounded-2xl border border-outline-variant/50 overflow-hidden shadow-sm">
+              <div className="p-6 border-b border-outline-variant/30 bg-surface-container-low/30">
+                <h3 className="font-title-lg text-title-lg text-on-surface">Purchase History</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-surface-container-low/50 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+                      <th className="p-4 border-b border-outline-variant/30">Date</th>
+                      <th className="p-4 border-b border-outline-variant/30">Order ID</th>
+                      <th className="p-4 border-b border-outline-variant/30">Plan</th>
+                      <th className="p-4 border-b border-outline-variant/30">Amount</th>
+                      <th className="p-4 border-b border-outline-variant/30">Method</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-on-surface-variant font-body-sm">
+                          No transactions found.
+                        </td>
+                      </tr>
+                    ) : (
+                      transactions.map((tx: any) => (
+                        <tr key={tx._id} className="hover:bg-surface-container-low/30 transition-colors font-body-sm text-on-surface border-b border-outline-variant/20 last:border-0">
+                          <td className="p-4 whitespace-nowrap">{new Date(tx.createdAt).toLocaleDateString()}</td>
+                          <td className="p-4 font-mono text-xs">{tx.order_id}</td>
+                          <td className="p-4 font-medium">{tx.plan_name}</td>
+                          <td className="p-4">₹{tx.amount}</td>
+                          <td className="p-4 text-on-surface-variant">{tx.payment_method}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
         </div>
       </div>

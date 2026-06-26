@@ -360,4 +360,28 @@ router.post('/posts/:id/cancel-schedule', requireAuth, async (req, res) => {
   }
 });
 
+// DELETE /api/dashboard/posts/:id
+router.delete('/posts/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+
+    const post = await PostHistory.findOne({ _id: postId, user_id: userId });
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (post.status === 'posted') {
+      return res.status(400).json({ error: 'Cannot delete a published post' });
+    }
+
+    await PostHistory.deleteOne({ _id: postId, user_id: userId });
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Delete Post Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
 module.exports = router;

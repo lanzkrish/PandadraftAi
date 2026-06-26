@@ -50,11 +50,22 @@ export function GeneratorView({ isDemo = false }: { isDemo?: boolean }) {
           tone
         })
       });
-      const data = await res.json();
+      const responseText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseErr) {
+        throw new Error("The request timed out or the server returned an invalid response. The post may still be generating in the background. Please check your Content Library in a few moments.");
+      }
+      
       if (!res.ok) throw new Error(data.error || "Failed to generate content");
+      
       setGeneratedResult(data.variation);
       setHistoryId(data.historyId);
       setPostStatus("drafted");
+      
+      // Dispatch event to update credits in TopNav
+      window.dispatchEvent(new Event('user-credits-updated'));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -105,9 +116,9 @@ export function GeneratorView({ isDemo = false }: { isDemo?: boolean }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden">
+    <div className="flex-1 flex flex-col min-[1300px]:flex-row h-full overflow-y-auto min-[1300px]:overflow-hidden">
       {/* Left Panel (Input) */}
-      <aside className="w-full md:w-1/3 max-w-[400px] bg-white border-r border-outline-variant/20 p-6 md:p-gutter flex flex-col h-full overflow-y-auto shrink-0 z-10 relative">
+      <aside className="w-full min-[1300px]:w-1/3 min-[1300px]:max-w-[400px] bg-white border-b min-[1300px]:border-b-0 min-[1300px]:border-r border-outline-variant/20 p-6 min-[1300px]:p-gutter flex flex-col min-[1300px]:h-full min-[1300px]:overflow-y-auto shrink-0 z-10 relative">
         <div className="mb-8">
           <h3 className="font-title-lg text-title-lg mb-2">Workspace Setup</h3>
           <p className="font-body-sm text-body-sm text-on-surface-variant">Configure your parameters to generate high-performing content.</p>
@@ -206,7 +217,7 @@ export function GeneratorView({ isDemo = false }: { isDemo?: boolean }) {
       </aside>
 
       {/* Right Area (Output Canvas) */}
-      <section className="flex-1 bg-surface-container-low overflow-y-auto p-6 md:p-gutter relative">
+      <section className="flex-1 bg-surface-container-low min-[1300px]:overflow-y-auto p-6 min-[1300px]:p-gutter relative">
         <div className="max-w-[800px] mx-auto pb-24">
           <div className="flex justify-between items-center mb-8">
             <h3 className="font-headline-lg text-headline-lg text-on-surface">Generated Content</h3>

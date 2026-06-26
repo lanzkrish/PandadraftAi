@@ -27,6 +27,34 @@ function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setCouponLoading(true);
+    setCouponError("");
+    try {
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
+      const res = await fetch(`${apiUrl}/api/billing/validate-coupon`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ plan: plan.name, couponCode: couponInput.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to validate coupon");
+      setAppliedCoupon(data);
+    } catch (err: any) {
+      setCouponError(err.message);
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const handlePayment = async () => {
     setLoading(true);
@@ -39,12 +67,20 @@ function CheckoutForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ plan: plan.name }),
+        body: JSON.stringify({ plan: plan.name, couponCode: appliedCoupon ? appliedCoupon.coupon : undefined }),
       });
 
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Failed to initiate transaction");
+      }
+
+      if (data.isFree) {
+        setSuccess(true);
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 2500);
+        return;
       }
 
       // 2. Configure Razorpay Options
@@ -138,10 +174,13 @@ function CheckoutForm() {
         </div>
       )}
 
-      <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-5 mb-8">
+      <div className="bg-surface-container-low border border-outline-variant/30 rounded-xl p-5 mb-6">
         <div className="flex justify-between items-center mb-4">
           <span className="font-title-lg text-title-lg font-bold text-on-surface">{plan.name} Plan</span>
-          <span className="font-display-md text-headline-lg text-primary font-bold">₹{plan.price}</span>
+          <div className="text-right">
+            {appliedCoupon && <span className="font-title-md text-on-surface-variant line-through mr-2 text-[14px]">₹{plan.price}</span>}
+            <span className="font-display-md text-headline-lg text-primary font-bold">₹{appliedCoupon ? appliedCoupon.final_price : plan.price}</span>
+          </div>
         </div>
         <div className="space-y-2 text-body-sm text-on-surface-variant">
           <div className="flex justify-between">
@@ -153,6 +192,38 @@ function CheckoutForm() {
             <span className="font-medium text-on-surface">{plan.scheduling}</span>
           </div>
         </div>
+      </div>
+
+      <div className="mb-8">
+        <label className="block font-label-md text-on-surface-variant mb-2">Coupon Code</label>
+        <div className="flex gap-2">
+          <input 
+            type="text" 
+            value={couponInput}
+            onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+            placeholder="Enter code"
+            className="flex-1 bg-surface border border-outline-variant rounded-lg px-4 py-2 text-body-sm text-on-surface focus:outline-none focus:border-primary"
+            disabled={!!appliedCoupon || couponLoading}
+          />
+          {appliedCoupon ? (
+            <button 
+              onClick={() => { setAppliedCoupon(null); setCouponInput(""); }}
+              className="bg-error-container text-on-error-container px-4 py-2 rounded-lg font-label-md transition-opacity hover:opacity-90"
+            >
+              Remove
+            </button>
+          ) : (
+            <button 
+              onClick={handleApplyCoupon}
+              disabled={couponLoading || !couponInput.trim()}
+              className="bg-surface-container-high text-on-surface px-4 py-2 rounded-lg font-label-md transition-opacity hover:bg-surface-container disabled:opacity-50"
+            >
+              Apply
+            </button>
+          )}
+        </div>
+        {couponError && <p className="text-error text-[12px] mt-2">{couponError}</p>}
+        {appliedCoupon && <p className="text-green-600 text-[12px] mt-2 font-medium">Coupon {appliedCoupon.coupon} applied! {appliedCoupon.discount_percentage}% off.</p>}
       </div>
 
       <button
