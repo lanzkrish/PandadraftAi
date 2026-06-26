@@ -284,7 +284,7 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
             {hours.map((hour, rowIndex) => (
               <div key={hour} className="grid grid-cols-8 gap-1 items-center">
                 <div className="font-label-md text-label-md text-on-surface-variant text-right pr-2">{hour}</div>
-                {heatmapData[rowIndex].map((val, colIndex) => (
+                {heatmapData[rowIndex].map((val: number, colIndex: number) => (
                   <div 
                     key={colIndex} 
                     className={`heatmap-cell h-8 rounded-sm ${getColor(val)}`} 
