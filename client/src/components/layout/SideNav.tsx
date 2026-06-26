@@ -13,6 +13,7 @@ const navItems = [
   { name: "Write Post", href: "/dashboard/write", icon: "edit_document" },
   { name: "Library", href: "/dashboard/posts", icon: "library_books" },
   { name: "Analytics", href: "/dashboard/analytics", icon: "leaderboard" },
+  { name: "Preferences", href: "/dashboard/preferences", icon: "tune" },
   { name: "Subscribe", href: "/dashboard/subscribe", icon: "credit_card" },
   { name: "Settings", href: "/dashboard/settings", icon: "settings" },
 ];

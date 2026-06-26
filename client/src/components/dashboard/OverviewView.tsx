@@ -175,9 +175,18 @@ export function OverviewView({ isDemo = false }: { isDemo?: boolean }) {
         <div className="lg:col-span-1">
           <div className="sticky top-24">
             <Card glass className="bg-white/40 border-white/50">
-              <div className="flex items-center gap-2 mb-6">
-                <span className="material-symbols-outlined text-tertiary">auto_awesome</span>
-                <h3 className="font-title-lg text-title-lg text-on-surface">AI Suggestions</h3>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-tertiary">auto_awesome</span>
+                  <h3 className="font-title-lg text-title-lg text-on-surface">AI Suggestions</h3>
+                </div>
+                <button 
+                  onClick={() => router.push('/dashboard/preferences')}
+                  className="font-label-md text-label-md text-tertiary hover:opacity-80 transition-opacity flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[14px]">edit</span>
+                  Edit Pillars
+                </button>
               </div>
               <div className="flex flex-col gap-4">
                 {trendingLoading ? (

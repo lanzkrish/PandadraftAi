@@ -1,22 +1,90 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { CircularProgress } from "@/components/ui/CircularProgress";
 
 export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(!isDemo);
+
+  useEffect(() => {
+    if (isDemo) return;
+    const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
+    fetch(`${apiUrl}/api/dashboard/analytics`, { credentials: "include" })
+      .then(res => res.json())
+      .then(json => {
+        setData(json);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch analytics", err);
+        setLoading(false);
+      });
+  }, [isDemo]);
+
   const hours = ['8am', '12pm', '4pm', '8pm'];
-  const heatmapData = [
+  
+  // Default demo / fallback data
+  const heatmapData = data?.heatmapData || [
     [10, 20, 15, 30, 40, 5, 10], // 8am
     [20, 50, 80, 60, 40, 15, 20], // 12pm
     [30, 60, 90, 70, 50, 20, 30], // 4pm
     [15, 30, 40, 20, 10, 5,  5]  // 8pm
   ];
 
-  const getColor = (value: number) => {
-    if(value > 80) return 'bg-[#005cbb]'; // tertiary
-    if(value > 50) return 'bg-[#005cbb]/70';
-    if(value > 20) return 'bg-[#005cbb]/40';
-    return 'bg-surface-container-high';
+  const topTopics = data?.topTopics || [
+    { topic: "Design Systems", engagement: 1420, rate: "8.4%" },
+    { topic: "AI Integration", engagement: 980, rate: "6.2%" },
+    { topic: "Minimalism", engagement: 750, rate: "4.1%" },
+    { topic: "SaaS Growth", engagement: 420, rate: "2.8%" },
+  ];
+
+  const chartData = data?.chartData || [
+    { date: 'Oct 1', likes: 100, comments: 20 },
+    { date: 'Oct 8', likes: 120, comments: 30 },
+    { date: 'Oct 15', likes: 80, comments: 15 },
+    { date: 'Oct 22', likes: 150, comments: 40 },
+    { date: 'Oct 29', likes: 250, comments: 60 },
+  ];
+
+  const maxValRaw = Math.max(...chartData.map((d: any) => Math.max(d.likes, d.comments)), 10);
+  let maxVal = Math.ceil(maxValRaw / 10) * 10;
+  if (maxVal > 100) maxVal = Math.ceil(maxValRaw / 100) * 100;
+  if (maxVal > 1000) maxVal = Math.ceil(maxValRaw / 1000) * 1000;
+  
+  const yLabels = [maxVal, maxVal * 0.75, maxVal * 0.5, maxVal * 0.25, 0];
+  const formatY = (v: number) => v >= 1000 ? (v/1000).toFixed(v%1000===0?0:1)+'k' : Math.round(v).toString();
+  
+  const getPath = (key: string) => {
+    return chartData.map((d: any, i: number) => {
+      const x = i * 250;
+      const y = 300 - (d[key] / maxVal) * 300;
+      return `${i === 0 ? 'M' : 'L'}${x},${y}`;
+    }).join(' ');
   };
+  
+  const likesPath = getPath('likes');
+  const commentsPath = getPath('comments');
+  const gradientPath = `${likesPath} L1000,300 L0,300 Z`;
+
+  const maxHeat = Math.max(...heatmapData.flat(), 1);
+
+  const getColor = (value: number) => {
+    if (value === 0) return 'bg-surface-container-high';
+    const ratio = value / maxHeat;
+    if (ratio > 0.66) return 'bg-[#005cbb]';
+    if (ratio > 0.33) return 'bg-[#005cbb]/70';
+    return 'bg-[#005cbb]/40';
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center w-full h-full text-on-surface-variant font-body-lg">
+        <CircularProgress value={0} size={48} className="animate-spin mr-4" />
+        Loading your analytics...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -31,7 +99,6 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
       <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Performance Analytics</h1>
-          <h4>Not live yet</h4>
           <p className="font-body-sm text-body-sm text-on-surface-variant">Measure and analyze your content's impact across all channels.</p>
         </div>
         <div className="flex gap-2">
@@ -52,11 +119,11 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
         {/* Metric 1 */}
         <div className="glass-card bg-white/90 backdrop-blur-md rounded-xl p-6 relative overflow-hidden group hover:-translate-y-0.5 transition-transform duration-300 border border-outline-variant/20 shadow-sm">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Impressions</h3>
-            <span className="material-symbols-outlined text-outline-variant">visibility</span>
+            <h3 className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Engagement</h3>
+            <span className="material-symbols-outlined text-outline-variant">forum</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-display-md text-display-md text-on-surface">2.4M</span>
+            <span className="font-display-md text-display-md text-on-surface">{data?.totalEngagement ?? "2.4k"}</span>
             <span className="font-label-md text-label-md text-[#005cbb] flex items-center bg-[#005cbb]/10 px-1.5 py-0.5 rounded-sm">
               <span className="material-symbols-outlined text-[14px]">arrow_upward</span> 12.5%
             </span>
@@ -74,7 +141,7 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
             <span className="material-symbols-outlined text-outline-variant">favorite</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-display-md text-display-md text-on-surface">4.8%</span>
+            <span className="font-display-md text-display-md text-on-surface">{data?.avgEngagement ?? "4.8"}</span>
             <span className="font-label-md text-label-md text-[#005cbb] flex items-center bg-[#005cbb]/10 px-1.5 py-0.5 rounded-sm">
               <span className="material-symbols-outlined text-[14px]">arrow_upward</span> 2.1%
             </span>
@@ -87,11 +154,11 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
         {/* Metric 3 */}
         <div className="glass-card bg-white/90 backdrop-blur-md rounded-xl p-6 relative overflow-hidden group hover:-translate-y-0.5 transition-transform duration-300 border border-outline-variant/20 shadow-sm">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Audience Growth</h3>
-            <span className="material-symbols-outlined text-outline-variant">group_add</span>
+            <h3 className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Comments</h3>
+            <span className="material-symbols-outlined text-outline-variant">chat_bubble_outline</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-display-md text-display-md text-on-surface">+12k</span>
+            <span className="font-display-md text-display-md text-on-surface">{data?.totalComments ?? "0"}</span>
             <span className="font-label-md text-label-md text-on-surface-variant flex items-center bg-surface-container-high px-1.5 py-0.5 rounded-sm">
               <span className="material-symbols-outlined text-[14px]">horizontal_rule</span> 0.0%
             </span>
@@ -109,11 +176,11 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
           <div className="flex gap-4">
             <label className="flex items-center gap-2 cursor-pointer group">
               <div className="w-3 h-3 rounded-full bg-[#005cbb] group-hover:scale-110 transition-transform"></div>
-              <span className="font-label-md text-label-md text-on-surface-variant">Impressions</span>
+              <span className="font-label-md text-label-md text-on-surface-variant">Likes</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer group">
               <div className="w-3 h-3 rounded-full bg-surface-tint group-hover:scale-110 transition-transform"></div>
-              <span className="font-label-md text-label-md text-on-surface-variant">Clicks</span>
+              <span className="font-label-md text-label-md text-on-surface-variant">Comments</span>
             </label>
           </div>
         </div>
@@ -131,29 +198,21 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
 
           {/* X-Axis Labels */}
           <div className="absolute bottom-[-24px] w-full flex justify-between font-label-md text-label-md text-outline-variant">
-            <span>Oct 1</span>
-            <span>Oct 8</span>
-            <span>Oct 15</span>
-            <span>Oct 22</span>
-            <span>Oct 29</span>
+            {chartData.map((d: any, i: number) => <span key={i}>{d.date}</span>)}
           </div>
 
           {/* Y-Axis Labels */}
           <div className="absolute left-[-40px] h-full flex flex-col justify-between font-label-md text-label-md text-outline-variant text-right w-8">
-            <span>100k</span>
-            <span>75k</span>
-            <span>50k</span>
-            <span>25k</span>
-            <span>0</span>
+            {yLabels.map((v, i) => <span key={i}>{formatY(v)}</span>)}
           </div>
 
           <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 1000 300">
-            {/* Tertiary Line (Impressions) */}
-            <path className="chart-line" d="M0,250 C100,230 200,150 300,180 C400,210 500,100 600,120 C700,140 800,50 900,80 C950,95 1000,40 1000,40" fill="none" stroke="#005cbb" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
-            {/* Secondary Line (Clicks) */}
-            <path className="chart-line" d="M0,280 C100,270 200,220 300,240 C400,260 500,180 600,190 C700,200 800,150 900,160 C950,165 1000,120 1000,120" fill="none" stroke="#5d5f5f" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" style={{ animationDelay: '0.2s' }}></path>
+            {/* Tertiary Line (Likes) */}
+            <path className="chart-line" d={likesPath} fill="none" stroke="#005cbb" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
+            {/* Secondary Line (Comments) */}
+            <path className="chart-line" d={commentsPath} fill="none" stroke="#5d5f5f" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" style={{ animationDelay: '0.2s' }}></path>
             {/* Gradient Fill under Tertiary Line */}
-            <path d="M0,250 C100,230 200,150 300,180 C400,210 500,100 600,120 C700,140 800,50 900,80 C950,95 1000,40 1000,40 L1000,300 L0,300 Z" fill="url(#chartGradient)" opacity="0.1"></path>
+            <path d={gradientPath} fill="url(#chartGradient)" opacity="0.1"></path>
             <defs>
               <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0%" stopColor="#005cbb"></stop>
@@ -174,39 +233,32 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
               <thead>
                 <tr className="border-b border-outline-variant/20">
                   <th className="font-label-md text-label-md text-on-surface-variant py-3 px-2 uppercase tracking-wider font-medium">Topic</th>
-                  <th className="font-label-md text-label-md text-on-surface-variant py-3 px-2 uppercase tracking-wider font-medium text-right">Reach</th>
-                  <th className="font-label-md text-label-md text-on-surface-variant py-3 px-2 uppercase tracking-wider font-medium text-right">Eng. Rate</th>
+                  <th className="font-label-md text-label-md text-on-surface-variant py-3 px-2 uppercase tracking-wider font-medium text-right">Engagement</th>
+                  <th className="font-label-md text-label-md text-on-surface-variant py-3 px-2 uppercase tracking-wider font-medium text-right">% of Total</th>
                 </tr>
               </thead>
               <tbody className="font-body-sm text-body-sm">
-                <tr className="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors">
-                  <td className="py-3 px-2 text-on-surface font-medium flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#005cbb]"></div> Design Systems
-                  </td>
-                  <td className="py-3 px-2 text-on-surface-variant text-right">142k</td>
-                  <td className="py-3 px-2 text-[#005cbb] text-right font-medium">8.4%</td>
-                </tr>
-                <tr className="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors">
-                  <td className="py-3 px-2 text-on-surface font-medium flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-surface-tint"></div> AI Integration
-                  </td>
-                  <td className="py-3 px-2 text-on-surface-variant text-right">98k</td>
-                  <td className="py-3 px-2 text-[#005cbb] text-right font-medium">6.2%</td>
-                </tr>
-                <tr className="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors">
-                  <td className="py-3 px-2 text-on-surface font-medium flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-outline-variant"></div> Minimalism
-                  </td>
-                  <td className="py-3 px-2 text-on-surface-variant text-right">75k</td>
-                  <td className="py-3 px-2 text-on-surface-variant text-right">4.1%</td>
-                </tr>
-                <tr className="hover:bg-surface-container-low transition-colors">
-                  <td className="py-3 px-2 text-on-surface font-medium flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-outline-variant"></div> SaaS Growth
-                  </td>
-                  <td className="py-3 px-2 text-on-surface-variant text-right">42k</td>
-                  <td className="py-3 px-2 text-on-surface-variant text-right">2.8%</td>
-                </tr>
+                {topTopics.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="py-8 text-center text-on-surface-variant font-body-sm">
+                      No posts published yet.
+                    </td>
+                  </tr>
+                ) : (
+                  topTopics.map((topic: any, i: number) => {
+                    const colors = ['bg-[#005cbb]', 'bg-surface-tint', 'bg-outline-variant', 'bg-outline-variant'];
+                    return (
+                      <tr key={i} className="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors">
+                        <td className="py-3 px-2 text-on-surface font-medium flex items-center gap-2 truncate max-w-[200px]">
+                          <div className={`w-2 h-2 flex-shrink-0 rounded-full ${colors[i] || colors[0]}`}></div> 
+                          {topic.topic}
+                        </td>
+                        <td className="py-3 px-2 text-on-surface-variant text-right">{topic.engagement}</td>
+                        <td className="py-3 px-2 text-[#005cbb] text-right font-medium">{topic.rate}</td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -236,7 +288,7 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
                   <div 
                     key={colIndex} 
                     className={`heatmap-cell h-8 rounded-sm ${getColor(val)}`} 
-                    title={`${val} interactions`}
+                    title={`${val} posts`}
                   ></div>
                 ))}
               </div>
