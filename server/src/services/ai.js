@@ -405,9 +405,41 @@ Return ONLY the revised post text, nothing else.`;
   }
 }
 
+/**
+ * Generate 3 trending topics for the dashboard
+ */
+async function generateTrendingTopics(categories = []) {
+  const categoriesHint = categories.length > 0 ? `in the following areas: ${categories.join(', ')}` : 'in the professional/startup world';
+  const prompt = `You are an AI trend analyzer. Identify exactly 3 trending, highly-relevant discussion topics for this week ${categoriesHint}.
+Return ONLY a JSON array of 3 strings. Each string should be an engaging, specific topic title. Maximum 10 words per topic.
+Example: ["How AI agents are replacing SaaS in 2024", "The shift from remote to hybrid work"]`;
+
+  try {
+    const text = await callWithRetry(prompt);
+    const cleaned = text.replace(/\`\`\`(?:json)?\n?/g, '').trim();
+    const topics = JSON.parse(cleaned);
+
+    if (!Array.isArray(topics) || topics.length === 0) {
+      throw new Error('Invalid topics format from AI');
+    }
+
+    logger.info(`Generated ${topics.length} trending topics`);
+    return topics.slice(0, 3);
+  } catch (error) {
+    logger.error('Failed to generate trending topics:', error);
+    // Fallback if AI fails
+    return [
+      "How AI is changing workflows this year",
+      "The importance of authentic storytelling",
+      "Building a personal brand in 2026"
+    ];
+  }
+}
+
 module.exports = {
   generateTopics,
   generateTopicsFromKeyword,
   generatePost,
   revisePost,
+  generateTrendingTopics,
 };

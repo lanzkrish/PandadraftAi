@@ -369,6 +369,60 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
             </div>
           </section>
 
+          {/* Content Preferences Section */}
+          <section className="scroll-mt-24" id="preferences">
+            <div className="mb-6">
+              <h2 className="font-title-lg text-title-lg text-on-surface mb-1">Content Preferences</h2>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">Set up your Content Categories/Pillars and voice settings so the AI can recommend trending topics.</p>
+            </div>
+            
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 border border-outline-variant/50 shadow-sm">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="font-label-md text-label-md text-on-surface-variant ml-1">Content Categories / Pillars</label>
+                  <p className="font-body-sm text-[13px] text-on-surface-variant mb-2 ml-1">What topics do you want the AI to write about? Separate multiple topics with commas.</p>
+                  <input 
+                    name="content_categories"
+                    className="w-full px-4 py-2.5 bg-white border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/10 transition-all" 
+                    type="text" 
+                    placeholder="E.g. Engineering Leadership, Startups, Web Development"
+                    value={displayUser.content_categories || ""}
+                    onChange={handleChange}
+                    disabled={isDemo}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-label-md text-label-md text-on-surface-variant ml-1">Content Tone</label>
+                  <p className="font-body-sm text-[13px] text-on-surface-variant mb-2 ml-1">Choose the default tone of voice for your generated posts.</p>
+                  <select 
+                    className="w-full px-4 py-2.5 bg-white border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/10 transition-all appearance-none cursor-pointer" 
+                    value={displayUser.content_tone || "professional"}
+                    onChange={(e) => {
+                      if (!isDemo) setUser({ ...user, content_tone: e.target.value });
+                    }}
+                    disabled={isDemo}
+                  >
+                    <option value="professional">Professional & Approachable</option>
+                    <option value="casual">Casual & Friendly</option>
+                    <option value="thought-leadership">Bold & Visionary (Thought Leadership)</option>
+                    <option value="storytelling">Narrative & Storytelling</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="mt-8 flex justify-end">
+                <button 
+                  onClick={handleSave}
+                  disabled={isDemo || isSaving}
+                  className="px-6 py-3 bg-[#0071E3] text-white rounded-xl font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm font-medium disabled:opacity-50"
+                >
+                  {isSaving ? "Saving..." : "Save Preferences"}
+                </button>
+              </div>
+            </div>
+          </section>
+
           {/* Billing Section */}
           <section className="scroll-mt-24" id="billing">
             <div className="mb-6">

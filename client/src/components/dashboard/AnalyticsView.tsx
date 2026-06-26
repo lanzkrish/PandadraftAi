@@ -31,6 +31,7 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
       <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Performance Analytics</h1>
+          <h4>Not live yet</h4>
           <p className="font-body-sm text-body-sm text-on-surface-variant">Measure and analyze your content's impact across all channels.</p>
         </div>
         <div className="flex gap-2">

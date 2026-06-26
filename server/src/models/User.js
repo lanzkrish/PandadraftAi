@@ -30,6 +30,8 @@ const userSchema = new mongoose.Schema({
   avatar_url: { type: String, default: null },
   avatar_last_changed: { type: Date, default: null },
   last_payment_method: { type: String, default: null },
+  weekly_trending_topics: { type: [String], default: [] },
+  weekly_trending_updated_at: { type: Date, default: null },
 }, { timestamps: true });
 
 // Ensure null values are completely removed for sparse index fields
