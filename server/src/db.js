@@ -4,6 +4,8 @@ const logger = require('./utils/logger');
 const User = require('./models/User');
 const LinkedInToken = require('./models/LinkedInToken');
 const PostHistory = require('./models/PostHistory');
+const Coupon = require('./models/Coupon');
+const Transaction = require('./models/Transaction');
 
 // ── Database Connection ──────────────────────────────────────
 
@@ -214,4 +216,6 @@ module.exports = {
   User,
   LinkedInToken,
   PostHistory,
+  Coupon,
+  Transaction,
 };

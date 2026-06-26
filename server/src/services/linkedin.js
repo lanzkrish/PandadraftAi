@@ -187,10 +187,8 @@ async function createPost(userId, text) {
 
     let postId = response.headers['x-restli-id'];
     
-    // LinkedIn API returns urn:li:share:ID for ugcPosts, but the actual viewable URL requires urn:li:activity:ID
-    if (postId && postId.startsWith('urn:li:share:')) {
-      postId = postId.replace('urn:li:share:', 'urn:li:activity:');
-    }
+    // We must return the raw URN (e.g. urn:li:share:ID or urn:li:ugcPost:ID). 
+    // LinkedIn handles these properly in the feed/update URL and redirects to the activity automatically.
 
     logger.info(`LinkedIn post for user ${userId} on ${postTarget}! ID: ${postId}`);
     return { success: true, postId, target: postTarget };

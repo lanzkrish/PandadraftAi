@@ -9,6 +9,7 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
   const [loading, setLoading] = useState(!isDemo);
   const [isSaving, setIsSaving] = useState(false);
   const [isLinkedInConnected, setIsLinkedInConnected] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -77,7 +78,15 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
             .then(statusData => {
               setIsLinkedInConnected(!!statusData.authorized);
             })
-            .catch(err => console.error("Failed to fetch LinkedIn status", err))
+            .catch(err => console.error("Failed to fetch LinkedIn status", err));
+
+          // Fetch transactions
+          fetch(`${apiUrl}/api/billing/transactions`, { credentials: "include" })
+            .then(res => res.json())
+            .then(data => {
+              if (Array.isArray(data)) setTransactions(data);
+            })
+            .catch(err => console.error("Failed to fetch transactions", err))
             .finally(() => setLoading(false));
         } else {
           setLoading(false);
@@ -360,6 +369,60 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
             </div>
           </section>
 
+          {/* Content Preferences Section */}
+          <section className="scroll-mt-24" id="preferences">
+            <div className="mb-6">
+              <h2 className="font-title-lg text-title-lg text-on-surface mb-1">Content Preferences</h2>
+              <p className="font-body-sm text-body-sm text-on-surface-variant">Set up your Content Categories/Pillars and voice settings so the AI can recommend trending topics.</p>
+            </div>
+            
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 border border-outline-variant/50 shadow-sm">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="font-label-md text-label-md text-on-surface-variant ml-1">Content Categories / Pillars</label>
+                  <p className="font-body-sm text-[13px] text-on-surface-variant mb-2 ml-1">What topics do you want the AI to write about? Separate multiple topics with commas.</p>
+                  <input 
+                    name="content_categories"
+                    className="w-full px-4 py-2.5 bg-white border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/10 transition-all" 
+                    type="text" 
+                    placeholder="E.g. Engineering Leadership, Startups, Web Development"
+                    value={displayUser.content_categories || ""}
+                    onChange={handleChange}
+                    disabled={isDemo}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-label-md text-label-md text-on-surface-variant ml-1">Content Tone</label>
+                  <p className="font-body-sm text-[13px] text-on-surface-variant mb-2 ml-1">Choose the default tone of voice for your generated posts.</p>
+                  <select 
+                    className="w-full px-4 py-2.5 bg-white border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-[#0071E3] focus:ring-2 focus:ring-[#0071E3]/10 transition-all appearance-none cursor-pointer" 
+                    value={displayUser.content_tone || "professional"}
+                    onChange={(e) => {
+                      if (!isDemo) setUser({ ...user, content_tone: e.target.value });
+                    }}
+                    disabled={isDemo}
+                  >
+                    <option value="professional">Professional & Approachable</option>
+                    <option value="casual">Casual & Friendly</option>
+                    <option value="thought-leadership">Bold & Visionary (Thought Leadership)</option>
+                    <option value="storytelling">Narrative & Storytelling</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="mt-8 flex justify-end">
+                <button 
+                  onClick={handleSave}
+                  disabled={isDemo || isSaving}
+                  className="px-6 py-3 bg-[#0071E3] text-white rounded-xl font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm font-medium disabled:opacity-50"
+                >
+                  {isSaving ? "Saving..." : "Save Preferences"}
+                </button>
+              </div>
+            </div>
+          </section>
+
           {/* Billing Section */}
           <section className="scroll-mt-24" id="billing">
             <div className="mb-6">
@@ -405,20 +468,58 @@ export function SettingsView({ isDemo = false }: { isDemo?: boolean }) {
                       <div className="p-5 bg-white rounded-xl border border-outline-variant/50 flex items-center justify-between shadow-sm hover:border-outline-variant transition-colors group">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-8 bg-surface-container-low rounded border border-outline-variant/50 flex items-center justify-center relative overflow-hidden">
-                            <div className="font-bold text-[10px] text-[#0071E3] italic">VISA</div>
+                            <span className="material-symbols-outlined text-[#0071E3] text-[20px]">credit_card</span>
                           </div>
                           <div>
-                            <p className="font-body-sm text-body-sm text-on-surface font-medium mb-0.5">Visa ending in 4242</p>
-                            <p className="font-label-md text-label-md text-on-surface-variant">Expires 12/25</p>
+                            <p className="font-body-sm text-body-sm text-on-surface font-medium mb-0.5">{displayUser.last_payment_method || "None"}</p>
+                            <p className="font-label-md text-label-md text-on-surface-variant">Active for current plan</p>
                           </div>
                         </div>
-                        <button className="text-[#0071E3] font-label-md text-label-md hover:underline font-medium px-2 py-1 rounded hover:bg-[#0071E3]/5 transition-colors">Edit</button>
                       </div>
                     </div>
                   )}
                 </div>
               );
             })()}
+
+            {/* Purchase History */}
+            <div className="mt-8 bg-white/80 backdrop-blur-md rounded-2xl border border-outline-variant/50 overflow-hidden shadow-sm">
+              <div className="p-6 border-b border-outline-variant/30 bg-surface-container-low/30">
+                <h3 className="font-title-lg text-title-lg text-on-surface">Purchase History</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-surface-container-low/50 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+                      <th className="p-4 border-b border-outline-variant/30">Date</th>
+                      <th className="p-4 border-b border-outline-variant/30">Order ID</th>
+                      <th className="p-4 border-b border-outline-variant/30">Plan</th>
+                      <th className="p-4 border-b border-outline-variant/30">Amount</th>
+                      <th className="p-4 border-b border-outline-variant/30">Method</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-on-surface-variant font-body-sm">
+                          No transactions found.
+                        </td>
+                      </tr>
+                    ) : (
+                      transactions.map((tx: any) => (
+                        <tr key={tx._id} className="hover:bg-surface-container-low/30 transition-colors font-body-sm text-on-surface border-b border-outline-variant/20 last:border-0">
+                          <td className="p-4 whitespace-nowrap">{new Date(tx.createdAt).toLocaleDateString()}</td>
+                          <td className="p-4 font-mono text-xs">{tx.order_id}</td>
+                          <td className="p-4 font-medium">{tx.plan_name}</td>
+                          <td className="p-4">₹{tx.amount}</td>
+                          <td className="p-4 text-on-surface-variant">{tx.payment_method}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
         </div>
       </div>

@@ -700,7 +700,7 @@ function createTelegramBot(app, options = {}) {
     if (!config.telegram.useWebhook) logger.error('Telegram polling error:', error.message);
   });
 
-  logger.info(`Telegram bot started (${config.telegram.useWebhook ? 'webhook' : 'polling'} mode)`);
+
   return { bot, triggerWorkflowForUser: (user) => triggerWorkflowForUser(user, bot) };
 }
 

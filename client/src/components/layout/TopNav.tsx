@@ -18,12 +18,20 @@ export function TopNav({ isMobileMenuOpen, setIsMobileMenuOpen }: { isMobileMenu
   useEffect(() => {
     if (isDemo) return;
     const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
-    fetch(`${apiUrl}/api/auth/me`, { credentials: "include" })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.error) setUser(data);
-      })
-      .catch(err => console.error(err));
+    const fetchUser = () => {
+      fetch(`${apiUrl}/api/auth/me`, { credentials: "include" })
+        .then((res) => {
+          if (!res.ok) throw new Error("Not logged in");
+          return res.json();
+        })
+        .then((data) => setUser(data))
+        .catch(() => setUser(null));
+    };
+
+    fetchUser();
+
+    window.addEventListener('user-credits-updated', fetchUser);
+    return () => window.removeEventListener('user-credits-updated', fetchUser);
   }, []);
 
   useEffect(() => {

@@ -15,6 +15,7 @@ export function PostDetailView({ postId }: { postId: string }) {
   const [isScheduling, setIsScheduling] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -156,6 +157,28 @@ export function PostDetailView({ postId }: { postId: string }) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this draft? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      setIsDeleting(true);
+      const apiUrl = "" /* Proxy rewrite */;
+      const res = await fetch(`${apiUrl}/api/dashboard/posts/${postId}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      if (!res.ok) throw new Error("Failed to delete post");
+      
+      router.push("/dashboard/posts");
+    } catch (error) {
+      console.error(error);
+      alert("Error deleting post");
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex justify-center items-center h-full bg-surface-container-low">
@@ -274,7 +297,17 @@ export function PostDetailView({ postId }: { postId: string }) {
 
         {/* Bottom Actions Row */}
         {!isPosted && (
-          <div className="flex justify-end items-center px-4 md:px-6 py-3 mt-auto border-t border-outline-variant/10">
+          <div className="flex justify-between items-center px-4 md:px-6 py-3 mt-auto border-t border-outline-variant/10">
+            <div>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-md transition-colors font-label-md text-label-sm md:text-label-md disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[18px]">delete</span>
+                <span className="hidden sm:inline">{isDeleting ? "Deleting..." : "Delete Draft"}</span>
+              </button>
+            </div>
             <div className="flex items-center gap-1 md:gap-3 flex-wrap justify-end">
               <button
                 onClick={handleSave}

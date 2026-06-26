@@ -42,6 +42,35 @@ router.get('/overview', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/dashboard/trending-topics
+router.get('/trending-topics', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    let topics = user.weekly_trending_topics;
+
+    if (!topics || topics.length === 0 || !user.weekly_trending_updated_at || user.weekly_trending_updated_at < oneWeekAgo) {
+      const ai = require('../services/ai');
+      const categories = user.content_categories ? user.content_categories.split(',').map(c => c.trim()).filter(Boolean) : [];
+      topics = await ai.generateTrendingTopics(categories);
+      
+      user.weekly_trending_topics = topics;
+      user.weekly_trending_updated_at = now;
+      await user.save();
+    }
+
+    res.json({ topics });
+  } catch (error) {
+    logger.error('Trending Topics Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/dashboard/settings
 router.get('/settings', requireAuth, async (req, res) => {
   try {
@@ -66,11 +95,19 @@ router.put('/settings', requireAuth, async (req, res) => {
     if (email !== undefined) update.email = email;
     if (profession !== undefined) update.profession = profession;
     if (domain !== undefined) update.domain = domain;
-    if (content_categories !== undefined) update.content_categories = content_categories;
     if (content_tone !== undefined) update.content_tone = content_tone;
     if (keywords !== undefined) update.keywords = keywords;
 
-    await User.updateOne({ _id: userId }, { $set: update });
+    if (content_categories !== undefined) {
+      const user = await User.findById(userId);
+      if (user && user.content_categories !== content_categories) {
+        update.content_categories = content_categories;
+        // Reset trending cache so it regenerates based on new categories
+        update.weekly_trending_updated_at = null; 
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, update, { new: true }).select('-password_hash');
     
     res.json({ success: true, message: 'Settings updated successfully' });
   } catch (error) {
@@ -356,6 +393,30 @@ router.post('/posts/:id/cancel-schedule', requireAuth, async (req, res) => {
     res.json({ success: true, post });
   } catch (error) {
     logger.error('Cancel Schedule Error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
+// DELETE /api/dashboard/posts/:id
+router.delete('/posts/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postId = req.params.id;
+
+    const post = await PostHistory.findOne({ _id: postId, user_id: userId });
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (post.status === 'posted') {
+      return res.status(400).json({ error: 'Cannot delete a published post' });
+    }
+
+    await PostHistory.deleteOne({ _id: postId, user_id: userId });
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Delete Post Error:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 });

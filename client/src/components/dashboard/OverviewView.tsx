@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -9,10 +10,18 @@ import { CircularProgress } from "@/components/ui/CircularProgress";
 export function OverviewView({ isDemo = false }: { isDemo?: boolean }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(!isDemo);
+  const [trendingTopics, setTrendingTopics] = useState<string[]>([]);
+  const [trendingLoading, setTrendingLoading] = useState(!isDemo);
+  const router = useRouter();
 
   useEffect(() => {
-    if (isDemo) return;
+    if (isDemo) {
+      setTrendingTopics(["How AI is changing B2B sales cycles in 2026", "The rise of micro-SaaS", "Authenticity in professional branding"]);
+      return;
+    }
     const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
+    
+    // Fetch overview data
     fetch(`${apiUrl}/api/dashboard/overview`, { credentials: "include" })
       .then(res => res.json())
       .then(json => {
@@ -22,6 +31,21 @@ export function OverviewView({ isDemo = false }: { isDemo?: boolean }) {
       .catch(err => {
         console.error("Failed to fetch overview", err);
         setLoading(false);
+      });
+
+    // Fetch trending topics independently
+    fetch(`${apiUrl}/api/dashboard/trending-topics`, { credentials: "include" })
+      .then(res => res.json())
+      .then(json => {
+        if (json.topics) {
+          setTrendingTopics(json.topics);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to fetch trending topics", err);
+      })
+      .finally(() => {
+        setTrendingLoading(false);
       });
   }, [isDemo]);
 
@@ -156,13 +180,32 @@ export function OverviewView({ isDemo = false }: { isDemo?: boolean }) {
                 <h3 className="font-title-lg text-title-lg text-on-surface">AI Suggestions</h3>
               </div>
               <div className="flex flex-col gap-4">
-                <div className="bg-white/60 rounded-lg p-4 cursor-pointer hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group border border-white/40 shadow-sm">
-                  <span className="font-label-md text-label-md text-tertiary mb-2 block">Trending Topic</span>
-                  <h4 className="font-body-lg text-body-lg font-medium text-on-surface mb-2 line-clamp-2">
-                    How AI is changing B2B sales cycles in 2024
-                  </h4>
-                  <Button variant="glass" className="w-full mt-2">Generate Draft</Button>
-                </div>
+                {trendingLoading ? (
+                  <div className="p-4 text-center text-on-surface-variant font-body-sm bg-white/40 rounded-lg">
+                    <CircularProgress value={0} size={24} className="animate-spin mx-auto mb-2 opacity-50" />
+                    Finding trending topics for you...
+                  </div>
+                ) : trendingTopics.length > 0 ? (
+                  trendingTopics.map((topic, i) => (
+                    <div key={i} className="bg-white/60 rounded-lg p-4 cursor-pointer hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden group border border-white/40 shadow-sm">
+                      <span className="font-label-md text-label-md text-tertiary mb-2 block">Trending Topic</span>
+                      <h4 className="font-body-lg text-body-lg font-medium text-on-surface mb-2 line-clamp-2">
+                        {topic}
+                      </h4>
+                      <Button 
+                        variant="glass" 
+                        className="w-full mt-2" 
+                        onClick={() => router.push(`/dashboard/generator?topic=${encodeURIComponent(topic)}`)}
+                      >
+                        Generate Draft
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-on-surface-variant font-body-sm bg-white/40 rounded-lg">
+                    No trending topics available right now.
+                  </div>
+                )}
               </div>
             </Card>
           </div>

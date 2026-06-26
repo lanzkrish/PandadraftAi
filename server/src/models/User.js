@@ -29,6 +29,22 @@ const userSchema = new mongoose.Schema({
   linkedin_id: { type: String, unique: true, sparse: true, index: true },
   avatar_url: { type: String, default: null },
   avatar_last_changed: { type: Date, default: null },
+  last_payment_method: { type: String, default: null },
+  weekly_trending_topics: { type: [String], default: [] },
+  weekly_trending_updated_at: { type: Date, default: null },
 }, { timestamps: true });
+
+// Ensure null values are completely removed for sparse index fields
+userSchema.pre('save', function () {
+  if (this.telegram_chat_id === null || this.telegram_chat_id === '') {
+    this.$unset('telegram_chat_id');
+  }
+  if (this.linkedin_id === null || this.linkedin_id === '') {
+    this.$unset('linkedin_id');
+  }
+  if (this.email === null || this.email === '') {
+    this.$unset('email');
+  }
+});
 
 module.exports = mongoose.model('User', userSchema);
