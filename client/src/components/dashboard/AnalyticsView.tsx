@@ -261,7 +261,7 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
           Pandadraft
         </div>
         <div className="font-body-sm text-body-sm text-center md:text-left mb-4 md:mb-0">
-          © 2024 Pandadraft AI. All rights reserved.
+          © 2026 Pandadraft AI. All rights reserved.
         </div>
         <div className="flex flex-wrap justify-center gap-6">
           <a className="font-body-sm text-body-sm hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>

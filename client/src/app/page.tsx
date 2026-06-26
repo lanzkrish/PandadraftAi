@@ -294,7 +294,7 @@ export default function LandingPage() {
           Pandadraft
         </div>
         <div className="font-body-sm text-body-sm text-on-secondary-container mb-4 md:mb-0">
-          © 2024 Pandadraft. All rights reserved.
+          © 2026 Pandadraft. All rights reserved.
         </div>
         <div className="flex gap-6">
           <a href="#" className="font-body-sm text-body-sm text-on-secondary-container hover:text-tertiary transition-colors opacity-80 hover:opacity-100">Privacy Policy</a>
