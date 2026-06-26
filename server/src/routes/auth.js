@@ -56,7 +56,8 @@ router.post('/register', async (req, res) => {
       max_credits: 2,
     });
 
-    const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}&email=${email}`;
+    const frontendOrigin = req.headers.origin || process.env.FRONTEND_URL || 'http://localhost:3000';
+    const verifyUrl = `${frontendOrigin}/verify-email?token=${verificationToken}&email=${email}`;
 
     // Send Verification Email
     try {
@@ -351,7 +352,8 @@ router.post('/forgot-password', async (req, res) => {
     user.reset_password_expires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}&email=${email}`;
+    const frontendOrigin = req.headers.origin || process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendOrigin}/reset-password?token=${resetToken}&email=${email}`;
 
     try {
       if (process.env.RESEND_API_KEY) {

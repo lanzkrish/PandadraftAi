@@ -199,6 +199,31 @@ async function createPost(userId, text) {
 }
 
 /**
+ * Fetch analytics (likes and comments) for a specific post
+ */
+async function getPostAnalytics(userId, urn) {
+  try {
+    const accessToken = await getAccessToken(userId);
+    // Fetch social actions
+    const response = await axios.get(`${LINKEDIN_API_BASE}/socialActions/${encodeURIComponent(urn)}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'X-Restli-Protocol-Version': '2.0.0',
+      },
+    });
+
+    return {
+      likes: response.data?.likesSummary?.totalLikes || 0,
+      comments: response.data?.commentsSummary?.totalFirstDegreeComments || 0, // Sometimes it's totalFirstDegreeComments or just comments
+    };
+  } catch (error) {
+    logger.warn(`Could not fetch analytics for ${urn}: ${error.response?.data?.message || error.message}`);
+    // If scope issues or post deleted, return 0
+    return { likes: 0, comments: 0 };
+  }
+}
+
+/**
  * Setup Express routes for LinkedIn OAuth (multi-user)
  */
 function setupOAuthRoutes(app) {
@@ -271,5 +296,6 @@ module.exports = {
   getAccessToken,
   getProfile,
   createPost,
+  getPostAnalytics,
   setupOAuthRoutes,
 };

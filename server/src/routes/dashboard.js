@@ -71,6 +71,116 @@ router.get('/trending-topics', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/dashboard/analytics
+router.get('/analytics', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const posts = await PostHistory.find({ user_id: userId, status: 'posted' }).lean();
+    
+    let totalEngagement = 0;
+    let totalComments = 0;
+    const totalPublished = posts.length;
+
+    // Heatmap initialization (4 rows: 8am, 12pm, 4pm, 8pm. 7 cols: Mon-Sun)
+    const heatmapData = [
+      [0, 0, 0, 0, 0, 0, 0], // 8am
+      [0, 0, 0, 0, 0, 0, 0], // 12pm
+      [0, 0, 0, 0, 0, 0, 0], // 4pm
+      [0, 0, 0, 0, 0, 0, 0]  // 8pm
+    ];
+
+    // Chart Data initialization (last 5 days)
+    const chartData = [];
+    const today = new Date();
+    for (let i = 4; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      chartData.push({
+        date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        dateStr: d.toISOString().split('T')[0],
+        likes: 0,
+        comments: 0
+      });
+    }
+
+    const linkedin = require('../services/linkedin');
+    
+    // Limit to 10 most recent posts to avoid slow load times / rate limits
+    const recentPosts = posts.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 10);
+    
+    const postsWithAnalytics = await Promise.all(recentPosts.map(async (post) => {
+      let stats = { likes: 0, comments: 0 };
+      if (post.linkedin_post_id) {
+        stats = await linkedin.getPostAnalytics(userId, post.linkedin_post_id);
+      }
+      const engagement = stats.likes + stats.comments;
+      totalEngagement += engagement;
+      totalComments += stats.comments;
+
+      const date = new Date(post.updatedAt || post.createdAt);
+      
+      // Update chartData if it matches one of the last 5 days
+      const postDateStr = date.toISOString().split('T')[0];
+      const chartPoint = chartData.find(d => d.dateStr === postDateStr);
+      if (chartPoint) {
+        chartPoint.likes += stats.likes;
+        chartPoint.comments += stats.comments;
+      }
+
+      let day = date.getDay() - 1; // 1=Mon->0, 0=Sun->-1
+      if (day === -1) day = 6;
+
+      const hour = date.getHours();
+      let row = 0;
+      if (hour >= 11 && hour <= 14) row = 1;
+      else if (hour >= 15 && hour <= 18) row = 2;
+      else if (hour > 18 || hour < 5) row = 3;
+
+      heatmapData[row][day] += 1;
+
+      // Extract title from post_content (first line, or up to 50 chars)
+      let title = post.topic || 'General Topic';
+      if (post.post_content) {
+        const firstLine = post.post_content.split('\n')[0].trim();
+        // remove asterisks if markdown header
+        title = firstLine.replace(/^#+\s*/, '').replace(/\*/g, '');
+        if (title.length > 50) title = title.substring(0, 50) + '...';
+      }
+
+      return {
+        id: post._id,
+        topic: title,
+        engagement,
+      };
+    }));
+
+    const avgEngagement = totalPublished > 0 ? (totalEngagement / totalPublished).toFixed(1) : 0;
+    
+    const topTopics = postsWithAnalytics
+      .sort((a, b) => b.engagement - a.engagement)
+      .slice(0, 4)
+      .map(p => ({
+        topic: p.topic,
+        engagement: p.engagement,
+        rate: totalEngagement > 0 ? ((p.engagement / totalEngagement) * 100).toFixed(1) + '%' : '0%'
+      }));
+
+    res.json({
+      totalEngagement,
+      totalComments,
+      totalPublished,
+      avgEngagement,
+      audienceGrowth: 0,
+      heatmapData,
+      chartData,
+      topTopics,
+    });
+  } catch (error) {
+    logger.error('Dashboard Analytics Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/dashboard/settings
 router.get('/settings', requireAuth, async (req, res) => {
   try {
