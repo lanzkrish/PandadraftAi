@@ -43,6 +43,7 @@ router.post('/register', async (req, res) => {
       password_hash: passwordHash,
       is_email_verified: false,
       email_verification_token: verificationTokenHash,
+      verification_email_sent_at: Date.now(),
       linkedin_profile_url: linkedinProfile || null,
       status: 'active',
       // Provide defaults for settings handled by the backend
@@ -253,7 +254,11 @@ router.post('/login', async (req, res) => {
     }
 
     if (!user.is_email_verified) {
-      return res.status(403).json({ error: 'Please verify your email address before logging in' });
+      return res.status(403).json({ 
+        error: 'Please verify your email address before logging in',
+        needsVerification: true,
+        email: user.email 
+      });
     }
 
     const passwordWithPepper = password + PEPPER;
@@ -318,7 +323,110 @@ router.post('/verify-email', async (req, res) => {
     res.json({ message: 'Email successfully verified', pendingPlan: user.pending_plan });
   } catch (error) {
     logger.error('Verify Email Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Server error during verification' });
+  }
+});
+
+// @route POST /api/auth/resend-verification
+router.post('/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Return success even if user not found to prevent email enumeration
+      return res.json({ message: 'If an account exists, a verification link has been sent.' });
+    }
+
+    if (user.is_email_verified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    // Check 24 hour cooldown
+    if (user.verification_email_sent_at) {
+      const hoursSinceLastSent = (Date.now() - user.verification_email_sent_at.getTime()) / (1000 * 60 * 60);
+      if (hoursSinceLastSent < 24) {
+        return res.status(429).json({ error: 'A verification link was already sent recently. Please check your inbox or wait 24 hours to request a new one.' });
+      }
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    user.email_verification_token = crypto.createHash('sha256').update(verificationToken).digest('hex');
+    user.verification_email_sent_at = Date.now();
+    await user.save();
+
+    const frontendOrigin = req.headers.origin || process.env.FRONTEND_URL || 'http://localhost:3000';
+    const verifyUrl = `${frontendOrigin}/verify-email?token=${verificationToken}&email=${email}`;
+
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || 'Pandadraft <noreply@pandadraft.ai>',
+        to: [email],
+        subject: 'Verify your email address for Pandadraft',
+        html: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e5e5e5; }
+        .header { background-color: #ffffff; padding: 32px; text-align: center; border-bottom: 1px solid #e5e5e5; }
+        .logo { font-size: 24px; font-weight: bold; color: #0071E3; margin: 0; letter-spacing: -0.5px; }
+        .content { padding: 40px 32px; text-align: center; }
+        .title { font-size: 20px; font-weight: 600; color: #111111; margin-top: 0; margin-bottom: 16px; }
+        .text { font-size: 15px; line-height: 1.6; color: #555555; margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
+        .button { display: inline-block; background-color: #0071E3; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 28px; border-radius: 8px; transition: background-color 0.2s; }
+        .button:hover { background-color: #005cbb; }
+        .footer { background-color: #f9f9f9; padding: 24px 32px; text-align: center; border-top: 1px solid #e5e5e5; }
+        .footer-text { font-size: 13px; color: #888888; margin: 0; line-height: 1.5; }
+        .footer-link { color: #0071E3; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">Pandadraft</h1>
+        </div>
+        <div class="content">
+            <h2 class="title">Verify Your Email Address</h2>
+            <p class="text">
+                Thanks for joining Pandadraft. To secure your account and access all features, please verify your email address.
+            </p>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td align="center">
+                        <a href="${verifyUrl}" class="button" target="_blank" rel="noopener noreferrer">
+                            Verify Email
+                        </a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="footer">
+            <p class="footer-text">
+                If you didn't create an account with Pandadraft, you can safely ignore this email.
+            </p>
+            <p class="footer-text" style="margin-top: 12px; font-size: 11px;">
+                Button not working? Copy and paste this link into your browser:<br>
+                <a href="${verifyUrl}" class="footer-link" style="word-break: break-all;">${verifyUrl}</a>
+            </p>
+            <p class="footer-text" style="margin-top: 24px;">
+                &copy; ${new Date().getFullYear()} Pandadraft. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>`
+      });
+    }
+
+    res.json({ message: 'Verification link has been sent to your email.' });
+  } catch (error) {
+    logger.error('Resend Verification Error:', error);
+    res.status(500).json({ error: 'Server error during verification resend' });
   }
 });
 

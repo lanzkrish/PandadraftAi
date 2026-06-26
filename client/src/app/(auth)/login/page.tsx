@@ -9,6 +9,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [resendStatus, setResendStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [resendMessage, setResendMessage] = useState("");
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -28,6 +32,10 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.needsVerification) {
+          setNeedsVerification(true);
+          setUnverifiedEmail(data.email || email);
+        }
         throw new Error(data.error || "Failed to login");
       }
 
@@ -39,6 +47,31 @@ export default function LoginPage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendStatus("loading");
+    setResendMessage("");
+    try {
+      const apiUrl = "" /* Proxy rewrite in next.config.ts handles backend routing */;
+      const res = await fetch(`${apiUrl}/api/auth/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to resend verification email");
+      }
+
+      setResendStatus("success");
+      setResendMessage(data.message || "Verification link sent! Please check your inbox.");
+    } catch (err: any) {
+      setResendStatus("error");
+      setResendMessage(err.message);
+    }
+  };
+
   return (
     <div className="glass-card bg-white/90 backdrop-blur-md rounded-xl p-8 md:p-12 border border-outline-variant/50 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-[#0071E3]/20">
       <div className="mb-8">
@@ -47,8 +80,24 @@ export default function LoginPage() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-error-container text-on-error-container rounded-lg font-body-sm">
-          {error}
+        <div className="mb-6 p-4 bg-error-container text-on-error-container rounded-lg font-body-sm flex flex-col gap-3">
+          <span>{error}</span>
+          {needsVerification && (
+            <div className="pt-2 border-t border-error/20 flex flex-col items-start">
+              <button 
+                onClick={handleResendVerification}
+                disabled={resendStatus === "loading" || resendStatus === "success"}
+                className="text-sm font-medium hover:underline flex items-center gap-1 disabled:opacity-50"
+              >
+                {resendStatus === "loading" ? "Sending..." : "Resend Verification Email"}
+              </button>
+              {resendMessage && (
+                <span className={`text-xs mt-2 ${resendStatus === "success" ? "text-green-600" : "text-error"}`}>
+                  {resendMessage}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
 

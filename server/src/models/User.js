@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, sparse: true, index: true },
   is_email_verified: { type: Boolean, default: false },
   email_verification_token: { type: String, default: null },
+  verification_email_sent_at: { type: Date, default: null },
   password_hash: { type: String, default: null },
   linkedin_profile_url: { type: String, default: null },
   reset_password_token: { type: String, default: null },
