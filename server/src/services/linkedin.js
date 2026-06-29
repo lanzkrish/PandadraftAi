@@ -17,7 +17,7 @@ function getAuthUrl(userId) {
     client_id: config.linkedin.clientId,
     redirect_uri: config.linkedin.redirectUri,
     scope: 'openid profile w_member_social w_organization_social r_organization_social',
-    state: `pandadraft_user_${userId}_${Date.now()}`,
+    state: `tacodraft_user_${userId}_${Date.now()}`,
   });
   return `${LINKEDIN_AUTH_URL}?${params.toString()}`;
 }
@@ -50,7 +50,7 @@ async function exchangeCodeForTokens(userId, code) {
     if (linkedinId) {
       const existingUser = await User.findOne({ linkedin_id: linkedinId });
       if (existingUser && String(existingUser._id) !== String(userId)) {
-        throw new Error('This LinkedIn profile is already connected to another Pandadraft account.');
+        throw new Error('This LinkedIn profile is already connected to another TacoDraft account.');
       }
       await User.updateOne({ _id: userId }, { $set: { linkedin_id: linkedinId } });
     }
@@ -252,8 +252,8 @@ function setupOAuthRoutes(app) {
       `);
     }
 
-    // Extract userId from state: pandadraft_user_<userId>_<timestamp>
-    const stateMatch = state && state.match(/pandadraft_user_([a-f0-9]+)_/);
+    // Extract userId from state: tacodraft_user_<userId>_<timestamp>
+    const stateMatch = state && state.match(/tacodraft_user_([a-f0-9]+)_/);
     const userId = stateMatch ? stateMatch[1] : null;
 
     if (!code || !userId) {
@@ -265,7 +265,7 @@ function setupOAuthRoutes(app) {
       res.send(`
         <html><body style="font-family:system-ui;padding:40px;text-align:center;">
           <h1>✅ LinkedIn Connected!</h1>
-          <p>You can now close this tab and go back to your PandaDraft dashboard to schedule your posts.</p>
+          <p>You can now close this tab and go back to your TacoDraft dashboard to schedule your posts.</p>
           <script>
             setTimeout(() => {
               window.close();

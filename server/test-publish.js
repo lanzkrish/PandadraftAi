@@ -4,7 +4,7 @@ const { initDatabase, closeDatabase, PostHistory } = require('./src/db');
 const { startManualPostScheduler } = require('./src/services/scheduler');
 
 async function test() {
-  await initDatabase(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/pandadraft');
+  await initDatabase(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/tacodraft');
   const post = await PostHistory.findById('6a34d9c262f6ec6bfde51875');
   if (post) {
     console.log('Found post, resetting to scheduled');

@@ -28,6 +28,16 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
+    if (linkedinProfile) {
+      // Basic normalization to prevent exact matches
+      const existingProfile = await User.findOne({ 
+        linkedin_profile_url: { $regex: new RegExp('^' + linkedinProfile.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '$', 'i') } 
+      });
+      if (existingProfile) {
+        return res.status(400).json({ error: 'This LinkedIn profile is already registered to an account.' });
+      }
+    }
+
     // Hash password with Argon2. The salt is handled automatically. We append the PEPPER to the password before hashing.
     const passwordWithPepper = password + PEPPER;
     const passwordHash = await argon2.hash(passwordWithPepper, {
@@ -64,9 +74,9 @@ router.post('/register', async (req, res) => {
     try {
       if (process.env.RESEND_API_KEY) {
         await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'Pandadraft <noreply@pandadraft.ai>',
+          from: process.env.RESEND_FROM_EMAIL || 'TacoDraft <noreply@tacodraft.ai>',
           to: [email],
-          subject: 'Verify your email address for Pandadraft',
+          subject: 'Verify your email address for TacoDraft',
           html: `<!DOCTYPE html>
 <html>
 <head>
@@ -91,7 +101,7 @@ router.post('/register', async (req, res) => {
 
               <img
                 src="https://61c27pvrog.ufs.sh/f/csa5xgP43gu20Ydej7opI3OnUf2APZamuKDqjh75V9FgWecX"
-                alt="Pandadraft"
+                alt="TacoDraft"
                 width="64"
                 style="display:block;margin-bottom:24px;"
               />
@@ -104,7 +114,7 @@ router.post('/register', async (req, res) => {
                 letter-spacing:-0.02em;
                 color:#1c1b1b;
                 margin-bottom:12px;">
-                Welcome to Pandadraft
+                Welcome to TacoDraft
               </div>
 
               <div style="
@@ -143,7 +153,7 @@ router.post('/register', async (req, res) => {
                 font-size:16px;
                 line-height:1.6;
                 color:#444748;">
-                Thanks for joining Pandadraft. To secure your account and access all features, please verify your email address.
+                Thanks for joining TacoDraft. To secure your account and access all features, please verify your email address.
               </p>
 
               <!-- CTA -->
@@ -207,7 +217,7 @@ router.post('/register', async (req, res) => {
                 margin:12px 0 0 0;
                 font-size:12px;
                 color:#a0a0a0;">
-                © 2026 Pandadraft. All rights reserved.
+                © 2026 TacoDraft. All rights reserved.
               </p>
 
             </td>
@@ -361,9 +371,9 @@ router.post('/resend-verification', async (req, res) => {
 
     if (process.env.RESEND_API_KEY) {
       await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'Pandadraft <noreply@pandadraft.ai>',
+        from: process.env.RESEND_FROM_EMAIL || 'TacoDraft <noreply@tacodraft.ai>',
         to: [email],
-        subject: 'Verify your email address for Pandadraft',
+        subject: 'Verify your email address for TacoDraft',
         html: `<!DOCTYPE html>
 <html>
 <head>
@@ -388,12 +398,12 @@ router.post('/resend-verification', async (req, res) => {
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="logo">Pandadraft</h1>
+            <h1 class="logo">TacoDraft</h1>
         </div>
         <div class="content">
             <h2 class="title">Verify Your Email Address</h2>
             <p class="text">
-                Thanks for joining Pandadraft. To secure your account and access all features, please verify your email address.
+                Thanks for joining TacoDraft. To secure your account and access all features, please verify your email address.
             </p>
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
@@ -407,14 +417,14 @@ router.post('/resend-verification', async (req, res) => {
         </div>
         <div class="footer">
             <p class="footer-text">
-                If you didn't create an account with Pandadraft, you can safely ignore this email.
+                If you didn't create an account with TacoDraft, you can safely ignore this email.
             </p>
             <p class="footer-text" style="margin-top: 12px; font-size: 11px;">
                 Button not working? Copy and paste this link into your browser:<br>
                 <a href="${verifyUrl}" class="footer-link" style="word-break: break-all;">${verifyUrl}</a>
             </p>
             <p class="footer-text" style="margin-top: 24px;">
-                &copy; ${new Date().getFullYear()} Pandadraft. All rights reserved.
+                &copy; ${new Date().getFullYear()} TacoDraft. All rights reserved.
             </p>
         </div>
     </div>
@@ -466,7 +476,7 @@ router.post('/forgot-password', async (req, res) => {
     try {
       if (process.env.RESEND_API_KEY) {
         await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'Pandadraft <noreply@pandadraft.ai>',
+          from: process.env.RESEND_FROM_EMAIL || 'TacoDraft <noreply@tacodraft.ai>',
           to: [email],
           subject: 'Password Reset Request',
           html: `<p>You requested a password reset. Click the link below to reset your password:</p>

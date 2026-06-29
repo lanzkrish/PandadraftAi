@@ -11,7 +11,7 @@ const axios = require('axios');
 
 async function main() {
   const isDevServer = config.devServer.isDevServer;
-  logger.info(`🚀 PandaDraft AI starting... ${isDevServer ? '(DEV SERVER MODE)' : ''}`);
+  logger.info(`🚀 TacoDraft AI starting... ${isDevServer ? '(DEV SERVER MODE)' : ''}`);
   logger.info(`Environment: ${config.env}`);
 
   // 1. Connect to MongoDB
@@ -76,7 +76,7 @@ async function main() {
   app.get('/', async (req, res) => {
     const users = await db.getAllActiveUsers();
     res.json({
-      name: 'PandaDraft AI',
+      name: 'TacoDraft AI',
       status: 'running',
       env: config.env,
       mode: isDevServer ? 'dev-server' : 'production',
@@ -249,7 +249,7 @@ async function main() {
   const users = await db.getAllActiveUsers();
   const devUsers = await db.getAllDevUsers();
   logger.info('========================================');
-  logger.info(`  PandaDraft AI is ready!`);
+  logger.info(`  TacoDraft AI is ready!`);
   logger.info(`  Mode:     ${isDevServer ? '🧪 Dev Server' : config.isProduction ? '🌐 Production' : '💻 Development'}`);
   logger.info(`  Database: MongoDB Atlas`);
   logger.info(`  Users:    ${users.length} active, ${devUsers.length} dev`);

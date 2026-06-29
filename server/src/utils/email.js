@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'info@mail.trixtern.com';
 
 function getReceiptHtml({ userName, planName, amountPaid, credits, orderId, date }) {
-  const primaryColor = '#0071E3'; // PandaDraft AI blue
+  const primaryColor = '#0071E3'; // TacoDraft AI blue
   const bgColor = '#f8fafc';
   const surfaceColor = '#ffffff';
   const textColor = '#1e293b';
@@ -41,14 +41,14 @@ function getReceiptHtml({ userName, planName, amountPaid, credits, orderId, date
     <body>
       <div class="container">
         <div class="header">
-          <h1>PandaDraft AI</h1>
+          <h1>TacoDraft AI</h1>
           <p>Subscription Payment Successful!</p>
         </div>
         
         <div class="content">
           <div class="greeting">Hi ${userName || 'there'},</div>
           <p style="line-height: 1.6; color: ${mutedColor}; margin-bottom: 30px;">
-            Thank you for subscribing to PandaDraft AI! Your payment has been successfully processed and your account is now upgraded. Here are your receipt details:
+            Thank you for subscribing to TacoDraft AI! Your payment has been successfully processed and your account is now upgraded. Here are your receipt details:
           </p>
           
           <div class="receipt-card">
@@ -86,7 +86,7 @@ function getReceiptHtml({ userName, planName, amountPaid, credits, orderId, date
         
         <div class="footer">
           <p style="margin: 0 0 10px 0;">If you have any questions, simply reply to this email.</p>
-          <p style="margin: 0;">&copy; ${new Date().getFullYear()} PandaDraft AI. All rights reserved.</p>
+          <p style="margin: 0;">&copy; ${new Date().getFullYear()} TacoDraft AI. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -108,7 +108,7 @@ async function sendPaymentReceiptEmail({ userEmail, userName, planName, amountPa
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `PandaDraft AI <${FROM_EMAIL}>`,
+      from: `TacoDraft AI <${FROM_EMAIL}>`,
       to: [userEmail],
       subject: `Receipt for your ${planName} Plan Subscription`,
       html: htmlContent,

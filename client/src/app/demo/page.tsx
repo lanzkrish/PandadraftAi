@@ -19,7 +19,7 @@ export default function DemoPage() {
             Product Walkthrough
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
-            See exactly what Pandadraft looks like once you're inside. A minimalist, powerful interface designed to keep you focused on growth.
+            See exactly what TacoDraft looks like once you're inside. A minimalist, powerful interface designed to keep you focused on growth.
           </p>
         </div>
 

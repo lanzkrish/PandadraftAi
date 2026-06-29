@@ -88,7 +88,7 @@ function CheckoutForm() {
         key: data.keyId,
         amount: data.amount,
         currency: data.currency,
-        name: "Pandadraft",
+        name: "TacoDraft",
         description: `${plan.name} Plan Subscription`,
         image: "https://61c27pvrog.ufs.sh/f/csa5xgP43gu20Ydej7opI3OnUf2APZamuKDqjh75V9FgWecX",
         order_id: data.orderId,
@@ -165,7 +165,7 @@ function CheckoutForm() {
       
       <div className="text-center mb-8">
         <h1 className="font-headline-lg text-headline-lg mb-2">Checkout</h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant">Complete your subscription to Pandadraft.</p>
+        <p className="font-body-lg text-body-lg text-on-surface-variant">Complete your subscription to TacoDraft.</p>
       </div>
 
       {error && (

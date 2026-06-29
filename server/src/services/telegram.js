@@ -483,7 +483,7 @@ function createTelegramBot(app, options = {}) {
 
     const user = await db.createUser({ chatId, name, isAdmin: false });
     sendTo(bot, msg.chat.id, `✅ *${user.name}* added!\nChat ID: \`${user.telegram_chat_id}\`\nDB ID: \`${user._id}\``);
-    sendTo(bot, chatId, `🎉 *You've been added to PandaDraft AI!*\n\n/start to begin.\n[Connect LinkedIn](${config.appUrl}/auth/linkedin?user=${user._id})`);
+    sendTo(bot, chatId, `🎉 *You've been added to TacoDraft AI!*\n\n/start to begin.\n[Connect LinkedIn](${config.appUrl}/auth/linkedin?user=${user._id})`);
     logger.info(`Admin added user: ${name} (${chatId})`);
   });
 
@@ -723,7 +723,7 @@ async function handleStartCommand(msg, bot, adminChatId) {
 
   if (!user) {
     onboardingSessions.set(String(chatId), { step: 'name', name: null, profession: null, domain: null, keywords: [] });
-    sendTo(bot, chatId, `👋 *Welcome to PandaDraft AI!*\n\nLet's get you set up. First, *what is your name?*`);
+    sendTo(bot, chatId, `👋 *Welcome to TacoDraft AI!*\n\nLet's get you set up. First, *what is your name?*`);
     return;
   }
   if (user.status !== 'active') {
@@ -750,7 +750,7 @@ async function handleHelpCommand(msg, bot, adminChatId) {
   if (!user) return;
 
   let help =
-    `📖 *PandaDraft AI Help*\n\n` +
+    `📖 *TacoDraft AI Help*\n\n` +
     `*Content:*\n/generate — Start workflow\n/status — Current state\n/approve — Approve post\n/cancel — Cancel\n\n` +
     `*LinkedIn:*\n/linkedin — Connect LinkedIn\n\n` +
     `*Account:*\n/myaccount — Account info\n/settings — Preferences\n/history — Post history\n\n` +

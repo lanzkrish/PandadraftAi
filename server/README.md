@@ -1,4 +1,4 @@
-# PandaDraft AI 🤖
+# TacoDraft AI 🤖
 
 AI-powered LinkedIn auto-poster with Telegram bot interface. Supports **multiple users** with per-user schedules, preferences, and LinkedIn accounts.
 

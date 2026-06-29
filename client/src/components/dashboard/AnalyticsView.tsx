@@ -311,10 +311,10 @@ export function AnalyticsView({ isDemo = false }: { isDemo?: boolean }) {
       {/* Footer */}
       <footer className="w-full pt-8 pb-4 flex flex-col md:flex-row justify-between items-center border-t border-outline-variant/10 text-on-surface-variant">
         <div className="font-display-md text-[20px] text-primary mb-4 md:mb-0 font-bold">
-          Pandadraft
+          TacoDraft
         </div>
         <div className="font-body-sm text-body-sm text-center md:text-left mb-4 md:mb-0">
-          © 2026 Pandadraft AI. All rights reserved.
+          © 2026 TacoDraft AI. All rights reserved.
         </div>
         <div className="flex flex-wrap justify-center gap-6">
           <a className="font-body-sm text-body-sm hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>

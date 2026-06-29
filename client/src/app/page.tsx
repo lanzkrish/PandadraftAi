@@ -2,6 +2,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
+import { Footer } from "@/components/layout/Footer";
 
 export default function LandingPage() {
   return (
@@ -31,7 +32,7 @@ export default function LandingPage() {
           Automate your LinkedIn growth with <span className="text-tertiary text-transparent bg-clip-text bg-gradient-to-r from-tertiary to-primary">Precision & Style.</span>
         </h1>
         <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-2xl">
-          Pandadraft is the premium AI SaaS designed for professionals. Scale your personal brand without sacrificing authenticity or aesthetic.
+          TacoDraft is the premium AI SaaS designed for professionals. Scale your personal brand without sacrificing authenticity or aesthetic.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-20">
@@ -91,7 +92,7 @@ export default function LandingPage() {
               </div>
               <div className="mx-auto flex items-center gap-2 bg-surface-container-highest/30 px-3 py-1 rounded-md">
                 <span className="material-symbols-outlined text-[14px] text-on-surface-variant">lock</span>
-                <span className="font-label-md text-[10px] text-on-surface-variant">app.pandadraft.com</span>
+                <span className="font-label-md text-[10px] text-on-surface-variant">app.tacodraft.com</span>
               </div>
             </div>
             {/* Fake Dashboard Body */}
@@ -289,19 +290,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto border-t border-outline-variant/10 bg-surface-bright relative z-10">
-        <div className="font-display-md text-[20px] font-bold text-on-surface mb-4 md:mb-0">
-          Pandadraft
-        </div>
-        <div className="font-body-sm text-body-sm text-on-secondary-container mb-4 md:mb-0">
-          © 2026 Pandadraft. All rights reserved.
-        </div>
-        <div className="flex gap-6">
-          <a href="#" className="font-body-sm text-body-sm text-on-secondary-container hover:text-tertiary transition-colors opacity-80 hover:opacity-100">Privacy Policy</a>
-          <a href="#" className="font-body-sm text-body-sm text-on-secondary-container hover:text-tertiary transition-colors opacity-80 hover:opacity-100">Terms of Service</a>
-          <a href="#" className="font-body-sm text-body-sm text-on-secondary-container hover:text-tertiary transition-colors opacity-80 hover:opacity-100">Help Center</a>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Pandadraft LinkedIn Growth Suite",
+  title: "TacoDraft LinkedIn Growth Suite",
   description: "Premium AI SaaS for LinkedIn Growth",
 };
 

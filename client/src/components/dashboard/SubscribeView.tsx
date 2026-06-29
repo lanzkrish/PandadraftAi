@@ -39,7 +39,7 @@ export function SubscribeView({ isDemo = false }: { isDemo?: boolean }) {
     if (isDemo) {
       setUser({
         name: "Demo User",
-        email: "demo@pandadraft.ai",
+        email: "demo@tacodraft.ai",
         plan: "Free",
         credits: 2,
         max_credits: 2

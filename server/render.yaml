@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pandadraft-ai
+    name: tacodraft-ai
     runtime: node
     plan: free
     buildCommand: npm install

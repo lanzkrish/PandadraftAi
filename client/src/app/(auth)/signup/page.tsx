@@ -64,7 +64,7 @@ function SignupForm() {
     <div className="glass-card bg-white/90 backdrop-blur-md rounded-xl p-8 md:p-12 border border-outline-variant/50 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-[#0071E3]/20">
       <div className="mb-8">
         <h1 className="font-headline-lg text-headline-lg mb-2">Create an account.</h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant">Tell us a bit about who you are to tailor the Pandadraft experience.</p>
+        <p className="font-body-lg text-body-lg text-on-surface-variant">Tell us a bit about who you are to tailor the TacoDraft experience.</p>
         {plan && plan !== "Free" && (
           <div className="mt-3 px-3 py-1.5 bg-[#0071E3]/10 text-[#0071E3] rounded-lg font-label-md text-xs font-bold inline-block">
             Selected Plan: {plan}

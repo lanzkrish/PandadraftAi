@@ -11,7 +11,7 @@ export function TopNav({ isMobileMenuOpen, setIsMobileMenuOpen }: { isMobileMenu
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<{name: string, email: string, plan?: string, credits?: number, max_credits?: number, avatar_url?: string} | null>(
-    isDemo ? {name: "Demo User", email: "demo@pandadraft.ai", plan: "Growth", credits: 50, max_credits: 50} : null
+    isDemo ? {name: "Demo User", email: "demo@tacodraft.ai", plan: "Growth", credits: 50, max_credits: 50} : null
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
 

@@ -1,9 +1,9 @@
-# PandaDraft AI (AutodraftAi) 🐼🚀
+# TacoDraft AI (AutodraftAi) 🐼🚀
 
-PandaDraft AI is an intelligent, automated content creation and scheduling platform designed specifically for LinkedIn. It empowers professionals, creators, and SaaS founders to maintain a consistent, high-quality presence on LinkedIn without spending hours writing and formatting posts.
+TacoDraft AI is an intelligent, automated content creation and scheduling platform designed specifically for LinkedIn. It empowers professionals, creators, and SaaS founders to maintain a consistent, high-quality presence on LinkedIn without spending hours writing and formatting posts.
 
 ## 🌟 What is it?
-PandaDraft AI is your personal AI ghostwriter and social media manager. It takes your raw ideas, goals, and target audiences, and transforms them into highly engaging, viral-ready LinkedIn posts. Whether you want to drive engagement, generate leads, or establish thought leadership, PandaDraft crafts the perfect message in your desired tone.
+TacoDraft AI is your personal AI ghostwriter and social media manager. It takes your raw ideas, goals, and target audiences, and transforms them into highly engaging, viral-ready LinkedIn posts. Whether you want to drive engagement, generate leads, or establish thought leadership, TacoDraft crafts the perfect message in your desired tone.
 
 ## ⚙️ How it Works
 1. **Connect Your Profile**: Securely link your LinkedIn account (personal or company page) via our dashboard.
@@ -21,7 +21,7 @@ PandaDraft AI is your personal AI ghostwriter and social media manager. It takes
 - **Drives Engagement**: The AI is trained to write scroll-stopping hooks and engaging formatting that naturally performs well on LinkedIn.
 
 ## 🛠️ Technology Stack
-PandaDraft AI is built using a modern, scalable JavaScript ecosystem:
+TacoDraft AI is built using a modern, scalable JavaScript ecosystem:
 
 ### Frontend
 - **Framework**: [Next.js](https://nextjs.org/) & React
